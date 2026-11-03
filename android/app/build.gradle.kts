@@ -9,7 +9,7 @@ plugins {
 val clients = listOf("demo", "demo_space", "demo_event", "demo_vehicle")
 
 android {
-    namespace = "com.devcatstudios.arenabook"
+    namespace = "com.devcatstudios.slotbook"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -23,8 +23,8 @@ android {
     }
 
     defaultConfig {
-        // Each client's flavor appends ".<client>", e.g. com.devcatstudios.arenabook.demo. Never change it after a store upload.
-        applicationId = "com.devcatstudios.arenabook"
+        // Each client's flavor appends ".<client>", e.g. com.devcatstudios.slotbook.demo. Never change it after a store upload.
+        applicationId = "com.devcatstudios.slotbook"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_cache.dart';
+import 'package:slotbook/app/config/app_cache.dart';
 
 import 'cache_field.dart';
 
@@ -7,7 +7,7 @@ import 'cache_field.dart';
 class ThemeStore extends GetxController {
   static ThemeStore get to => Get.find();
 
-  final isDarkMode = CacheField<bool>(AppCache.themes.isDarkMode, true); // ArenaBook defaults to dark
+  final isDarkMode = CacheField<bool>(AppCache.themes.isDarkMode, true); // SlotBook defaults to dark
   final selectedThemeColor = CacheField<String>(AppCache.themes.themeColor, ''); // hex string, '' = default palette
   final userPreferenceId = CacheField<String>(AppCache.themes.themePrefsId, ''); // server-side id of the saved theme
 

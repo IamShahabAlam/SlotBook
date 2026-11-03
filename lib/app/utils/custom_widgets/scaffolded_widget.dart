@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../config/app_fontweights.dart';
 import '../../config/app_size_config.dart';
-import 'arena_logo.dart';
+import 'slotbook_logo.dart';
 import 'common_text.dart';
 import 'custom_appbar.dart';
 
@@ -155,7 +155,7 @@ class ScafoldedWidget extends StatelessWidget {
                             alignment: Alignment.center,
                             child: ConstrainedBox(
                               constraints: const BoxConstraints.tightFor(height: 110),
-                              child: const ArenaLogo(size: 110),
+                              child: const SlotBookLogo(size: 110),
                             ).marginOnly(top: 30).animateToBottom(),
                           ),
                         ),

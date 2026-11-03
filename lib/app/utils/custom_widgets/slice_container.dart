@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_border_radius.dart';
+import 'package:slotbook/app/config/app_border_radius.dart';
 
 import '../../config/app_paddings.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'helpers/resource_types.dart';
 
-import 'package:arenabook/data/models/booking.dart';
-import 'package:arenabook/data/models/resource.dart';
-import 'package:arenabook/data/models/time_range.dart';
-import 'package:arenabook/data/rules/booking_rules.dart';
-import 'package:arenabook/data/rules/booking_stats.dart';
+import 'package:slotbook/data/models/booking.dart';
+import 'package:slotbook/data/models/resource.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/rules/booking_rules.dart';
+import 'package:slotbook/data/rules/booking_stats.dart';
 
 Booking booking({
   String id = 'TRF-1001',

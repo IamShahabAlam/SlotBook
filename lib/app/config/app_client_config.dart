@@ -13,7 +13,7 @@ class AppClientConfig {
   static String localBaseUrl = '';
 
   /// Remote trial switch for every client, keyed by client id (see AppAccess). Raw link without a revision id = always the latest version.
-  static const accessConfigUrl = 'https://gist.githubusercontent.com/IamShahabAlam/017400e59bb8e4b791864f7971aa42fe/raw/ArenaBookConfig.json';
+  static const accessConfigUrl = 'https://gist.githubusercontent.com/IamShahabAlam/017400e59bb8e4b791864f7971aa42fe/raw/SlotBookConfig.json';
 
   // Client -------------------
   /// The client this build is for, picked by `--flavor <id>` (configs live in clients/).

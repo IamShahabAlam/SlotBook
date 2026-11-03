@@ -6,7 +6,7 @@ import '../../../../app/config/app_paddings.dart';
 import '../../../../app/config/app_size_config.dart';
 import '../../../../app/config/app_strings.dart';
 import '../../../../app/service/getx_service/app_dev_mode_service.dart';
-import '../../../../app/utils/custom_widgets/arena_logo.dart';
+import '../../../../app/utils/custom_widgets/slotbook_logo.dart';
 import '../../../../app/utils/custom_widgets/common_text.dart';
 import '../../../../app/utils/custom_widgets/custom_textfield.dart';
 import '../../../../app/utils/custom_widgets/gradient_button.dart';
@@ -31,7 +31,7 @@ class LoginScreen extends GetView<LoginController> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Hidden gesture (double tap, swipe up, swipe right) on the logo toggles Developer Mode
-                  DevGestureDetector(child: const Center(child: ArenaLogo(size: 90))),
+                  DevGestureDetector(child: const Center(child: SlotBookLogo(size: 90))),
                   0.02.ph,
                   CommonText(
                     text: AppStrings.appName.isEmpty ? 'Welcome' : AppStrings.appName,

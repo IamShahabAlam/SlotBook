@@ -6,7 +6,7 @@
 import 'dart:io';
 import 'dart:math';
 
-const bundlePrefix = 'com.devcatstudios.arenabook';
+const bundlePrefix = 'com.devcatstudios.slotbook';
 const configDir = 'lib/app/config/clients';
 const pbxproj = 'ios/Runner.xcodeproj/project.pbxproj';
 const schemesDir = 'ios/Runner.xcodeproj/xcshareddata/xcschemes';

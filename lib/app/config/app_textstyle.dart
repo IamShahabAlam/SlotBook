@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:arenabook/app/config/app_colors.dart';
-import 'package:arenabook/app/config/app_fontweights.dart';
+import 'package:slotbook/app/config/app_colors.dart';
+import 'package:slotbook/app/config/app_fontweights.dart';
 
 class AppTextStyles {
   static TextStyle splashSubtitleTextStyle = TextStyle(

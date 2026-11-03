@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 
 import '../../config/app_size_config.dart';
-import 'arena_logo.dart';
+import 'slotbook_logo.dart';
 
 class LogoLoader extends StatelessWidget {
   String? loadingMsg;
@@ -25,7 +25,7 @@ class LogoLoader extends StatelessWidget {
                 width: size,
                 margin: const EdgeInsets.symmetric(horizontal: 10),
                 alignment: Alignment.center,
-                child: const ArenaLogo(size: size, semanticLabel: 'Loading'))
+                child: const SlotBookLogo(size: size, semanticLabel: 'Loading'))
             .animate(
               onPlay: (icontroller) => icontroller.repeat(),
             )

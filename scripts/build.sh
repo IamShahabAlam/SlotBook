@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Release build for one client: scripts/build.sh <client> <dev|prod> [apk|appbundle|ipa] [extra flutter args]
-# Backend settings come from config/<env>.json. The output is copied to dist/ArenaBook-<client>-<version>[-dev].<apk|aab|ipa>.
+# Backend settings come from config/<env>.json. The output is copied to dist/SlotBook-<client>-<version>[-dev].<apk|aab|ipa>.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -35,6 +35,6 @@ case "$TARGET" in
   appbundle) SRC="build/app/outputs/bundle/${CLIENT}Release/app-$CLIENT-release.aab"; EXT=aab ;;
   ipa) SRC=$(ls build/ios/ipa/*.ipa | head -1); EXT=ipa ;;
 esac
-OUT="dist/ArenaBook-$CLIENT-$VERSION$SUFFIX.$EXT"
+OUT="dist/SlotBook-$CLIENT-$VERSION$SUFFIX.$EXT"
 cp "$SRC" "$OUT"
 echo "Done: $OUT"

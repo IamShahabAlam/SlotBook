@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:arenabook/app/utils/custom_widgets/common_text.dart';
+import 'package:slotbook/app/utils/custom_widgets/common_text.dart';
 
 import '../../config/app_border_radius.dart';
 

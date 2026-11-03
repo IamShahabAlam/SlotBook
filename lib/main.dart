@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 // import 'package:device_preview/device_preview.dart';
 import 'app/config/app_strings.dart';
-import 'app/config/arena_theme.dart';
+import 'app/config/slotbook_theme.dart';
 import 'app/service/service_handler.dart/theme_store.dart';
 import 'app/utils/custom_widgets/keyboard_dismisser.dart';
 import 'app/utils/custom_widgets/main_error_widget.dart';
@@ -59,15 +59,15 @@ class MyApp extends StatelessWidget {
         // locale: DevicePreview.locale(context),
         // builder: DevicePreview.appBuilder,
         debugShowCheckedModeBanner: false,
-        theme: ArenaTheme.light,
-        darkTheme: ArenaTheme.dark,
+        theme: SlotBookTheme.light,
+        darkTheme: SlotBookTheme.dark,
         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
         title: AppStrings.appName,
         initialRoute: PageNames.splashscreen,
         getPages: appRoutes(),
         builder: (context, child) {
           ErrorWidget.builder = (errorDetails) => MainErrorWidget(error: errorDetails);
-          final colors = isDark ? ArenaColors.dark : ArenaColors.light;
+          final colors = isDark ? SlotBookColors.dark : SlotBookColors.light;
           // Edge-to-edge: transparent system bars, icon brightness follows the theme.
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: (isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
@@ -92,7 +92,7 @@ class _StartupErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ArenaTheme.dark,
+      theme: SlotBookTheme.dark,
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(
@@ -101,9 +101,9 @@ class _StartupErrorApp extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.error_outline_rounded, size: 48, color: context.arena.dangerText),
+                  Icon(Icons.error_outline_rounded, size: 48, color: context.slotbook.dangerText),
                   const SizedBox(height: 16),
-                  Text('ArenaBook could not start', style: context.text.titleLarge),
+                  Text('SlotBook could not start', style: context.text.titleLarge),
                   const SizedBox(height: 8),
                   Text(
                     'Local storage could not be opened. Please restart the app. If this keeps happening, contact support before reinstalling so your bookings are not lost.',

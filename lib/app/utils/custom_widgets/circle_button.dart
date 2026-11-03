@@ -2,7 +2,7 @@
 
 import 'package:flutter/Material.dart';
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_size_config.dart';
+import 'package:slotbook/app/config/app_size_config.dart';
 
 // class CircleButton extends StatelessWidget {
 //   CircleButton({

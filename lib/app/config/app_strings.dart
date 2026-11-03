@@ -2,7 +2,7 @@ import '../../data/models/resource.dart';
 
 class AppStrings {
   // App Identity ------------------- (fill these per project)
-  static const appName = 'ArenaBook';
+  static const appName = 'SlotBook';
 
   /// Follows the offered resource types, e.g. "Indoor Cricket & Padel Court Booking" or "Hatchback, Sedan & Premium Booking".
   static String get appTagline {

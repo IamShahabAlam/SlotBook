@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:arenabook/app/config/app_client_config.dart';
-import 'package:arenabook/app/config/app_strings.dart';
-import 'package:arenabook/app/service/getx_service/booking_service.dart';
-import 'package:arenabook/app/service/service_handler.dart/settings_store.dart';
-import 'package:arenabook/data/models/booking.dart';
-import 'package:arenabook/data/models/resource.dart';
-import 'package:arenabook/data/models/time_range.dart';
-import 'package:arenabook/data/rules/booking_stats.dart';
-import 'package:arenabook/data/rules/invoice_text.dart';
-import 'package:arenabook/presentation/arena/booking_form/booking_form_controller.dart';
-import 'package:arenabook/presentation/arena/dialogs/settings_dialog.dart';
-import 'package:arenabook/presentation/arena/shell/shell_controller.dart';
-import 'arena_app_test.dart' as app;
+import 'package:slotbook/app/config/app_client_config.dart';
+import 'package:slotbook/app/config/app_strings.dart';
+import 'package:slotbook/app/service/getx_service/booking_service.dart';
+import 'package:slotbook/app/service/service_handler.dart/settings_store.dart';
+import 'package:slotbook/data/models/booking.dart';
+import 'package:slotbook/data/models/resource.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/rules/booking_stats.dart';
+import 'package:slotbook/data/rules/invoice_text.dart';
+import 'package:slotbook/presentation/slotbook/booking_form/booking_form_controller.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/settings_dialog.dart';
+import 'package:slotbook/presentation/slotbook/shell/shell_controller.dart';
+import 'slotbook_app_test.dart' as app;
 import 'helpers/resource_types.dart';
 
 const futsal = ResourceType(
@@ -96,7 +96,7 @@ void main() {
     expect(find.text('Ayesha Khan'), findsOneWidget); // ...and listed
 
     // Form: no sport picker, padel preselected.
-    ShellController.to.go(ArenaTab.addBooking);
+    ShellController.to.go(SlotBookTab.addBooking);
     await tester.pumpAndSettle();
     expect(find.text('Select Sport Category'), findsNothing);
     expect(BookingFormController.to.resourceType.value, padel);
@@ -131,7 +131,7 @@ void main() {
     expect(SettingsStore.to.rateFor(futsal), 1800); // default rate from config
     expect(AppStrings.appTagline, 'Indoor Cricket, Padel Court & Futsal Pitch Booking');
 
-    ShellController.to.go(ArenaTab.addBooking);
+    ShellController.to.go(SlotBookTab.addBooking);
     await tester.pumpAndSettle();
     expect(find.text('Futsal Pitch'), findsOneWidget); // sport card in the form
     expect(tester.takeException(), isNull); // 3 cards fit

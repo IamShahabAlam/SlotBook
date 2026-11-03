@@ -6,14 +6,14 @@ class AppCache {
   static _URLs get urls => _URLs();
   static _Themes get themes => _Themes();
   static _General get general => _General();
-  static _Arena get arena => _Arena();
+  static _SlotBook get slotbook => _SlotBook();
 }
 
-class _Arena {
-  final String currencySymbol = 'arena_currency_symbol';
+class _SlotBook {
+  final String currencySymbol = 'slotbook_currency_symbol';
 
-  /// e.g. 'arena_cricket_hourly_rate' (same keys as before, so saved rates carry over).
-  String hourlyRate(String typeId) => 'arena_${typeId}_hourly_rate';
+  /// e.g. 'slotbook_cricket_hourly_rate' (same keys as before, so saved rates carry over).
+  String hourlyRate(String typeId) => 'slotbook_${typeId}_hourly_rate';
 }
 
 class _User {

@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:arenabook/app/config/app_client_config.dart';
-import 'package:arenabook/app/service/getx_service/booking_service.dart';
-import 'package:arenabook/data/models/booking.dart';
-import 'package:arenabook/data/models/pricing.dart';
-import 'package:arenabook/data/models/time_range.dart';
-import 'package:arenabook/data/repositories/booking/booking_repository.dart';
-import 'package:arenabook/presentation/arena/booking_form/booking_form_controller.dart';
-import 'package:arenabook/presentation/arena/dialogs/settings_dialog.dart';
-import 'package:arenabook/presentation/arena/invoice/invoice_sheet.dart';
-import 'arena_app_test.dart' as app;
+import 'package:slotbook/app/config/app_client_config.dart';
+import 'package:slotbook/app/service/getx_service/booking_service.dart';
+import 'package:slotbook/data/models/booking.dart';
+import 'package:slotbook/data/models/pricing.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/repositories/booking/booking_repository.dart';
+import 'package:slotbook/presentation/slotbook/booking_form/booking_form_controller.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/settings_dialog.dart';
+import 'package:slotbook/presentation/slotbook/invoice/invoice_sheet.dart';
+import 'slotbook_app_test.dart' as app;
 import 'helpers/resource_types.dart';
 
 void main() {

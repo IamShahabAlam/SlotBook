@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:arenabook/app/utils/custom_functions/logger.dart';
+import 'package:slotbook/app/utils/custom_functions/logger.dart';
 import '../../app/service/service_handler.dart/urls_store.dart';
 
 // Low level reachability probes, used by APIProvider to classify a failed request:

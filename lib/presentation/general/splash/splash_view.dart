@@ -5,9 +5,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 
 import '../../../app/config/app_strings.dart';
-import '../../../app/config/arena_theme.dart';
-import '../../../app/utils/custom_widgets/arena_logo.dart';
-import '../../arena/widgets/motion.dart';
+import '../../../app/config/slotbook_theme.dart';
+import '../../../app/utils/custom_widgets/slotbook_logo.dart';
+import '../../slotbook/widgets/motion.dart';
 import 'splash_controller.dart';
 
 class SplashView extends GetView<SplashController> {
@@ -15,7 +15,7 @@ class SplashView extends GetView<SplashController> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.arena;
+    final c = context.slotbook;
     const total = Duration(milliseconds: AppStrings.splashTime);
 
     return Scaffold(
@@ -48,7 +48,7 @@ class SplashView extends GetView<SplashController> {
                     const SizedBox(height: 28),
                     Text.rich(
                       TextSpan(
-                        text: 'ARENA',
+                        text: 'SLOT',
                         children: [
                           TextSpan(
                             text: 'BOOK',
@@ -76,7 +76,7 @@ class SplashView extends GetView<SplashController> {
                         height: 6,
                         color: c.surfaceMuted,
                         alignment: Alignment.centerLeft,
-                        child: Container(height: 6, decoration: const BoxDecoration(gradient: ArenaColors.ctaGradient)).animate().custom(
+                        child: Container(height: 6, decoration: const BoxDecoration(gradient: SlotBookColors.ctaGradient)).animate().custom(
                           duration: total,
                           builder: (context, value, child) => FractionallySizedBox(widthFactor: value, child: child),
                         ),
@@ -84,7 +84,7 @@ class SplashView extends GetView<SplashController> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'LOADING ARENABOOK ${AppStrings.kappVersionWithDate.toUpperCase()}',
+                      'LOADING SLOTBOOK ${AppStrings.kappVersionWithDate.toUpperCase()}',
                       style: context.text.labelSmall?.copyWith(color: c.textMuted, letterSpacing: 1.6, fontSize: 10),
                     ),
                   ],
@@ -107,7 +107,7 @@ class _OrbitingLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.arena;
+    final c = context.slotbook;
     final still = context.reduceMotion;
 
     // Soft emerald halo (same background avatar as before).
@@ -127,16 +127,16 @@ class _OrbitingLogo extends StatelessWidget {
       height: 74,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(colors: [ArenaColors.lime, ArenaColors.emerald], begin: Alignment.topRight, end: Alignment.bottomLeft),
-        boxShadow: [BoxShadow(color: ArenaColors.emerald.withValues(alpha: 0.35), blurRadius: 22)],
+        gradient: const LinearGradient(colors: [SlotBookColors.lime, SlotBookColors.emerald], begin: Alignment.topRight, end: Alignment.bottomLeft),
+        boxShadow: [BoxShadow(color: SlotBookColors.emerald.withValues(alpha: 0.35), blurRadius: 22)],
       ),
       alignment: Alignment.center,
-      child: ArenaLogo(size: 54, color: c.onAccent), // wide mark: needs a bigger box to look balanced in the round disc
+      child: SlotBookLogo(size: 46, color: c.onAccent), // near-square board: 46 keeps its corners clear of the disc edge
     );
 
     Widget orbit = CustomPaint(
       size: const Size.square(_size - 16),
-      painter: _OrbitPainter(track: c.border, head: ArenaColors.lime),
+      painter: _OrbitPainter(track: c.border, head: SlotBookColors.lime),
     );
 
     Widget dashes = CustomPaint(
@@ -192,7 +192,7 @@ class _OrbitPainter extends CustomPainter {
       ..shader = SweepGradient(
         startAngle: 0,
         endAngle: math.pi * 2,
-        colors: [ArenaColors.emerald.withValues(alpha: 0), ArenaColors.emerald, head],
+        colors: [SlotBookColors.emerald.withValues(alpha: 0), SlotBookColors.emerald, head],
         stops: const [1 - _sweep / (math.pi * 2), 1 - _sweep / (math.pi * 4), 1.0],
       ).createShader(arcRect);
     canvas.drawArc(arcRect, -_sweep, _sweep, false, arcPaint);

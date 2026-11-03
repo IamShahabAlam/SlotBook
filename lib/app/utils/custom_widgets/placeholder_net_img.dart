@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:arenabook/app/utils/utils.dart';
+import 'package:slotbook/app/utils/utils.dart';
 
 import '../../config/app_assets.dart';
 

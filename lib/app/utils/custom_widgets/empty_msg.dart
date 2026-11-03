@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:arenabook/app/utils/custom_widgets/gradient_button.dart';
-import 'package:arenabook/app/utils/utils.dart';
+import 'package:slotbook/app/utils/custom_widgets/gradient_button.dart';
+import 'package:slotbook/app/utils/utils.dart';
 import 'common_text.dart';
 
 import '../../config/app_size_config.dart';

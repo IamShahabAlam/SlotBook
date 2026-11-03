@@ -1,4 +1,4 @@
-import 'package:arenabook/data/models/resource.dart';
+import 'package:slotbook/data/models/resource.dart';
 
 // The configured resource types used across tests (from AppClientConfig.resourceTypes).
 final cricket = ResourceType.byId('cricket');

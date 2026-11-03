@@ -1,5 +1,5 @@
 import '../../app/config/app_client_config.dart';
-import '../../app/utils/formatters/arena_format.dart';
+import '../../app/utils/formatters/slotbook_format.dart';
 import '../models/booking.dart';
 
 /// Shareable receipt text. Pure functions of the booking, so they are unit tested.
@@ -18,21 +18,21 @@ class InvoiceText {
 
   /// WhatsApp message (*bold* is WhatsApp markdown).
   static String whatsApp(Booking b, {required String currency, bool? discountEnabled}) {
-    String m(int v) => ArenaFormat.money(v, symbol: currency);
+    String m(int v) => SlotBookFormat.money(v, symbol: currency);
     final emoji = b.resourceType.emoji;
     final itemise = showDiscount(b, enabled: discountEnabled);
     final terms = AppClientConfig.terms;
     final client = AppClientConfig.client;
     final contact = client.contactLine(phoneLabel: 'Ph: ');
     return [
-      '$emoji *ARENABOOK ${terms.subject.toUpperCase()} RECEIPT*',
+      '$emoji *SLOTBOOK ${terms.subject.toUpperCase()} RECEIPT*',
       if (client.name.isNotEmpty) '*${client.name}*',
       if (contact.isNotEmpty) contact,
       '---------------------------------------',
       '*Ref ID:* #${b.id}',
       '*Customer:* ${b.customerName}',
       '*${terms.resource}:* ${b.resource.name}',
-      '*Date:* ${ArenaFormat.longDate(b.date)}',
+      '*Date:* ${SlotBookFormat.longDate(b.date)}',
       '*Slots:* ${b.slotsLabel}',
       '',
       if (itemise) ...['*${terms.fee}:* ${m(b.totalFee)}', '*Discount:* -${m(b.discount)}'],
@@ -48,15 +48,15 @@ class InvoiceText {
   }
 
   static String plain(Booking b, {required String currency, bool? discountEnabled}) {
-    String m(int v) => ArenaFormat.money(v, symbol: currency);
+    String m(int v) => SlotBookFormat.money(v, symbol: currency);
     final discount = showDiscount(b, enabled: discountEnabled) ? ' (after ${m(b.discount)} discount)' : '';
-    return 'ARENABOOK INVOICE #${b.id} (${statusLabel(b)})\n'
+    return 'SLOTBOOK INVOICE #${b.id} (${statusLabel(b)})\n'
         'Customer: ${b.customerName} (${b.phone})\n'
         '${AppClientConfig.terms.resource}: ${b.resource.name}\n'
-        'Date: ${ArenaFormat.longDate(b.date)} (${b.slotsLabel})\n'
+        'Date: ${SlotBookFormat.longDate(b.date)} (${b.slotsLabel})\n'
         'Total: ${m(b.payable)}$discount | Paid: ${m(b.amountCollected)} | Due: ${m(b.balanceDue)}';
   }
 
   /// QR payload: enough to look the booking up at the gate.
-  static String qrData(Booking b) => 'ARENABOOK|${b.id}|${dateKey(b.date)}|${b.resourceId}|${b.slots.map((s) => '${s.startMinute}-${s.endMinute}').join(',')}';
+  static String qrData(Booking b) => 'SLOTBOOK|${b.id}|${dateKey(b.date)}|${b.resourceId}|${b.slots.map((s) => '${s.startMinute}-${s.endMinute}').join(',')}';
 }

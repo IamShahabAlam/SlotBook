@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:arenabook/app/config/app_border_radius.dart';
-import 'package:arenabook/app/config/app_box_shadow.dart';
-import 'package:arenabook/app/config/app_size_config.dart';
-import 'package:arenabook/app/service/getx_service/developer_mode_service.dart';
+import 'package:slotbook/app/config/app_border_radius.dart';
+import 'package:slotbook/app/config/app_box_shadow.dart';
+import 'package:slotbook/app/config/app_size_config.dart';
+import 'package:slotbook/app/service/getx_service/developer_mode_service.dart';
 import 'package:open_settings_plus/open_settings_plus.dart';
 
 import '../../config/app_assets.dart';

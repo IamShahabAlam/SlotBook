@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arenabook/app/utils/custom_widgets/keyboard_dismisser.dart';
+import 'package:slotbook/app/utils/custom_widgets/keyboard_dismisser.dart';
 
 /// Two fields at the top of a long scrollable page, like the booking form.
 Widget page(FocusNode a, FocusNode b, {bool dismisser = true}) => MaterialApp(

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_cache.dart';
+import 'package:slotbook/app/config/app_cache.dart';
 
 import 'cache_field.dart';
 

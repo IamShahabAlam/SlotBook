@@ -1,7 +1,7 @@
-# ArenaBook
+# SlotBook
 
-Ground booking app for arena owners, built for indoor cricket and padel. One phone runs the whole arena:
-book courts by the half hour, track advances and dues, and send customers a receipt on WhatsApp.
+Booking and payment ledger for businesses that rent out time: sports courts, studios, halls, vehicles.
+One phone runs the whole business: book resources by the slot, track advances and dues, and send customers a receipt on WhatsApp.
 Works fully offline, and all data stays on the device.
 
 Developed by **DevCat Studios**.
@@ -37,7 +37,7 @@ flutter test                     # unit + widget tests
 ## Clients
 
 One codebase, one app per client. The **flavor is the client id**: `--flavor demo` sets the app id
-(`com.devcatstudios.arenabook.demo`) *and* compiles in that client's config. Nothing is copied or linked
+(`com.devcatstudios.slotbook.demo`) *and* compiles in that client's config. Nothing is copied or linked
 before a build, so the native app and the Dart config can never disagree.
 
 | What | Where |
@@ -58,7 +58,7 @@ scripts\build.bat <client> <dev|prod> [apk|appbundle]        # Windows
 bash scripts/build.sh <client> <dev|prod> [apk|appbundle|ipa] # macOS / Linux (ipa needs a Mac)
 ```
 
-The output goes to `dist/ArenaBook-<client>-<version>.<apk|aab|ipa>` (`-dev` is added for dev builds). Extra arguments are passed to `flutter build`.
+The output goes to `dist/SlotBook-<client>-<version>.<apk|aab|ipa>` (`-dev` is added for dev builds). Extra arguments are passed to `flutter build`.
 
 The backend comes from `config/<env>.json` (Supabase URL and anon key). Copy `config/example.json` to `config/dev.json`
 and `config/prod.json` and fill them in; they are gitignored. VS Code's launch entries use `config/dev.json`.
@@ -99,7 +99,7 @@ Subfolders aren't bundled, so keep the files directly in the client's folder.
 
 ### Client launcher icon (optional)
 
-Without a custom icon, every client uses the ArenaBook icon.
+Without a custom icon, every client uses the SlotBook icon.
 
 - **Android:** put the client's icons in `android/app/src/<id>/res/`, using the same folders and names as `src/main/res`
   (`mipmap-*/ic_launcher*.png`, `mipmap-anydpi-v26/ic_launcher.xml`). Android replaces the default for that flavor automatically.
@@ -132,13 +132,13 @@ One Gist file controls every client. Each build reads only its own entry, keyed 
 
 ```
 lib/
-├── app/config/              # strings, theme (arena_theme.dart), cache keys, AppClientConfig
+├── app/config/              # strings, theme (slotbook_theme.dart), cache keys, AppClientConfig
 ├── app/config/clients/      # one ClientConfig per client (flavor)
 ├── app/service/getx_service/# BookingService (single source of truth), AppAccessService (trial switch)
 ├── data/models/             # Booking, ResourceType/Resource, TimeRange, AppAccess
 ├── data/rules/              # pure booking rules and invoice text, unit-tested
 ├── data/repositories/       # Hive booking repository
-└── presentation/arena/      # shell (tabs + drawer), home, booking_form, bookings, pending, calendar, invoice, dialogs
+└── presentation/slotbook/      # shell (tabs + drawer), home, booking_form, bookings, pending, calendar, invoice, dialogs
 assets/clients/<client>/     # each client's own images (bundled only into that client's app)
 tool/clients.dart            # add a client, declare its assets, switch its iOS icon
 scripts/build.bat|.sh        # release build of one client into dist/

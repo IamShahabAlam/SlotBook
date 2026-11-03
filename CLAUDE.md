@@ -1,11 +1,11 @@
-# CLAUDE.md — ArenaBook
+# CLAUDE.md — SlotBook
 
 Guide for every Claude session in this repo. Read it fully before changing anything.
 `README.md` has the product overview and the per-client config table; this file covers how to work here.
 
 ## What this app is
 
-ArenaBook is an **offline, single-phone booking ledger for indoor cricket / padel arena OWNERS** (not players).
+SlotBook (formerly ArenaBook) is an **offline, single-phone booking ledger for business OWNERS** (not customers); it started with indoor cricket / padel arenas.
 The owner books courts by the half hour, tracks advances and dues, and shares invoices with customers on WhatsApp.
 All data stays on the device. Flutter 3.38 / Dart 3.10, GetX (state, routing, DI), Hive CE (bookings),
 SharedPreferences (settings). Built by DevCat Studios on the in-house GetX starter (`starter_proj_getx`).
@@ -15,7 +15,7 @@ SharedPreferences (settings). Built by DevCat Studios on the in-house GetX start
 Read it before any structural change. The core uses neutral names: `ResourceType` (was `Sport`) and `Resource` (was `Court`).
 
 **It is moving to a Supabase backend** (multi-tenant, online writes, offline read cache, staff roles). The agreed design is
-`docs/ARENABOOK_SUPABASE_BACKEND_SPEC.md`; it wins over `docs/PROJECT_SPEC.md` for backend, data, auth, permissions and
+`docs/SLOTBOOK_SUPABASE_BACKEND_SPEC.md`; it wins over `docs/PROJECT_SPEC.md` for backend, data, auth, permissions and
 licensing. Work goes milestone by milestone (spec §21). **Done: M1** (database in `supabase/`), **M2** (app plumbing; the
 launch against a dev project is still to check). Until M5 the app still runs
 on Hive and the rules below describe today's app; don't rewire it ahead of its milestone.
@@ -48,7 +48,7 @@ flutter pub get
 flutter analyze                 # add no new issues (existing infos are in untouched starter utils)
 flutter test                    # all unit + widget tests
 flutter test test/booking_rules_test.dart   # a single file
-flutter test --flavor demo_space test/arena_app_test.dart --plain-name "all tabs"   # run as another client (demo-wording tests will fail)
+flutter test --flavor demo_space test/slotbook_app_test.dart --plain-name "all tabs"   # run as another client (demo-wording tests will fail)
 dart format -l 160 <files you changed>
 flutter run --flavor demo       # plain `flutter run` = demo (pubspec default-flavor)
 flutter build apk --debug --flavor demo     # verifies native plugins compile
@@ -83,20 +83,20 @@ Windows dev machine, so iOS is never built locally. If the build fails with a `F
 
 ```
 lib/
-├── main.dart                     # awaits InitBindings, then GetMaterialApp (ArenaTheme light/dark)
+├── main.dart                     # awaits InitBindings, then GetMaterialApp (SlotBookTheme light/dark)
 ├── routes/                       # app_pages.dart (PageNames) + app_routes.dart (GetPage list)
-├── app/config/                   # AppClientConfig, AppStrings, AppCache keys, arena_theme.dart, AppAssets
+├── app/config/                   # AppClientConfig, AppStrings, AppCache keys, slotbook_theme.dart, AppAssets
 ├── app/config/business/          # BusinessProfile (Terms + BookingPolicy + PricingMode + Features); profiles.dart: sportsVenue, spaceRental, eventVenue, vehicleRental
 ├── app/config/clients/           # ClientConfig + one file per client (flavor); each picks a profile
 ├── app/service/getx_service/     # BookingService, AppAccessService, + starter services
 ├── app/service/service_handler.dart/  # prefs-backed stores: SettingsStore, ThemeStore, CacheField
-├── app/utils/                    # ArenaToast, ArenaFormat, ArenaLogo, Logger, starter widgets
+├── app/utils/                    # SlotBookToast, SlotBookFormat, SlotBookLogo, Logger, starter widgets
 ├── data/models/                  # Booking, ResourceType/Resource, TimeRange, BookingPolicy, PricingMode, AppAccess (pure Dart + JSON)
 ├── data/rules/                   # BookingRules, BookingStats, InvoiceText: pure, unit-tested logic
 ├── data/repositories/booking/    # BookingRepository interface + Hive and in-memory implementations
 └── presentation/
     ├── general/                  # splash, init_bindings (+ unused starter login/dashboard)
-    └── arena/                    # the app: shell, home, booking_form, bookings, pending, calendar,
+    └── slotbook/                 # the app: shell, home, booking_form, bookings, pending, calendar,
                                   # invoice, dialogs, widgets (shared UI + motion)
 ```
 
@@ -109,7 +109,7 @@ lib/
 - **Time is injectable:** `BookingService(clock:)`, `AppAccessService(clock:, fetch:)`. Read "now" via
   `BookingService.to.now()` (it subscribes the Obx to the per-minute tick). Never call `DateTime.now()` in rules,
   controllers, or views.
-- **Shell:** `/arena` is a single route with an `IndexedStack` of tabs (`ArenaTab`); tabs keep their state.
+- **Shell:** `/slotbook` is a single route with an `IndexedStack` of tabs (`SlotBookTab`); tabs keep their state.
   `ShellBinding` creates all tab controllers. Navigation between tabs uses `ShellController.to.go(...)`.
   Booking actions (new, edit, repeat, invoice, mark paid, cancel) go through `BookingActions` in `shell/booking_actions.dart`.
 - **Startup order matters** (`InitBindings`): StorageService → stores → SecureStorageService → Supabase → AppAccessService →
@@ -123,7 +123,7 @@ lib/
   `cacheKeyIsNew`. Android auto-backup is off (`allowBackup="false"`): restored secure storage can't be decrypted.
   Any `CacheField` needs StorageService ready first.
 
-**Clients (flavors):** one codebase ships a separate app per arena client. **The flavor name is the client id.**
+**Clients (flavors):** one codebase ships a separate app per client business. **The flavor name is the client id.**
 - `AppClientConfig.client` = `ClientConfig.forFlavor(appFlavor)`. Flutter compiles the flavor in, so there are no copy or symlink
   steps. No flavor (unit tests) means `demo`; an unknown flavor throws.
 - Per-client values (business `name` (required), `tagline`, `address`, `phone`, `logoAsset`, business profile, resource types and resources,
@@ -142,8 +142,8 @@ lib/
   so a build bundles only its own client's files. Reference them as `AppClientConfig.client.asset('file.png')`, never with a literal id.
   Never add an unflavored `assets/clients/` entry: it would ship every client's files to everyone.
 - Launcher icon per client (optional): Android flavor source set `android/app/src/<id>/res/`; iOS `AppIcon-<id>.appiconset` and
-  `tool/clients.dart ios-icon <id>`. Without one, the client uses the ArenaBook icon.
-- App ids are `com.devcatstudios.arenabook.<id>` (Android `applicationIdSuffix`; iOS per-configuration bundle id). The launcher name is "ArenaBook" for all.
+  `tool/clients.dart ios-icon <id>`. Without one, the client uses the SlotBook icon.
+- App ids are `com.devcatstudios.slotbook.<id>` (Android `applicationIdSuffix`; iOS per-configuration bundle id). The launcher name is "SlotBook" for all.
 - Something only some clients get is a `ClientConfig` field (default = today's behaviour), never an `if (client.id == ...)`.
 - No symlinks or copy scripts for client files (the old `mobile-ecommerce` approach): they break on Windows and can mix up clients.
 
@@ -157,43 +157,43 @@ lib/
 - Dispose `TextEditingController`s in `onClose`.
 
 **UI and theme**
-- Read colours only through `context.arena` (`ArenaColors` ThemeExtension) and text through `context.text`.
+- Read colours only through `context.slotbook` (`SlotBookColors` ThemeExtension) and text through `context.text`.
   Never hard-code colours in widgets. `*Text` tokens are for text/icons on surfaces; plain accents are for fills.
   Any UI must look right in **both light and dark** mode.
 - Resource-type colours come from `ResourceTone` via the `ResourceTypeVisuals` extension (`type.fill(c)`, `type.text(c)`, `type.onAvatar(c)`).
-- Reuse the shared widgets in `presentation/arena/widgets/arena_widgets.dart` (`ArenaCard`, `GradientButton`, `SoftButton`,
-  `ArenaSegmented`, `ResourceTypeAvatar`, `ArenaBadge`, `SectionTitle`, `EmptyState`, `FieldLabel`), plus `BookingCard`/`BookingList` and `ResourceTypeFilter`.
-- Dialogs: `ArenaDialog.show(...)`, and `ConfirmDialog.ask(...)` for confirmations. Toasts: `ArenaToast.success/error/show`
+- Reuse the shared widgets in `presentation/slotbook/widgets/slotbook_widgets.dart` (`SlotBookCard`, `GradientButton`, `SoftButton`,
+  `SlotBookSegmented`, `ResourceTypeAvatar`, `SlotBookBadge`, `SectionTitle`, `EmptyState`, `FieldLabel`), plus `BookingCard`/`BookingList` and `ResourceTypeFilter`.
+- Dialogs: `SlotBookDialog.show(...)`, and `ConfirmDialog.ask(...)` for confirmations. Toasts: `SlotBookToast.success/error/show`
   (never `Get.snackbar`).
 - Motion: `.entrance(context, index:)`, `.popIn(context)`, `AnimatedNumber`, `TabFade` from `widgets/motion.dart`.
   Animation stays subtle, and every animation must honour reduce-motion (`context.reduceMotion` / `context.motion(...)`).
 - Logo: two marks. The **client's** business (header, drawer, Home banner, invoice) uses `ClientLogo` (its `logoAsset`, else a
-  monogram) with `client.name`. The **ArenaBook** brand (splash, About, loaders) uses `ArenaLogo` (tints and sizes
-  `assets/images/logo.png`; design locked, "Square Arena"). Receipt contact lines come from `client.contactLine()`.
+  monogram) with `client.name`. The **SlotBook** brand (splash, About, loaders) uses `SlotBookLogo` (tints and sizes
+  `assets/images/logo.png`; "slot board": white art with the slots cut out as holes, so the tint keeps them visible). Receipt contact lines come from `client.contactLine()`.
 - Fonts: Outfit (display) and Plus Jakarta Sans (body), bundled with OFL licences registered in `main.dart`.
 - Portrait only. Edge-to-edge system bars are set in `MyApp.builder`.
 - Keyboard: `KeyboardDismisser` (in `MyApp.builder`) closes it on any tap or drag outside the focused field, app-wide.
   Don't add per-screen `GestureDetector`/`unfocus()` wrappers for this. Scroll views with fields also set `keyboardDismissBehavior: onDrag`.
 - Numeric text fields that show a placeholder `0` must clear or select it on focus, so typing replaces the value.
 - **Industry words come from `AppClientConfig.terms`**, never literals: court(s), ground, sport, player, fee name, arena
-  (e.g. `'All ${AppClientConfig.terms.resources}'`). The brand ("ArenaBook", "ARENABOOK") stays literal.
+  (e.g. `'All ${AppClientConfig.terms.resources}'`). The brand ("SlotBook", "SLOTBOOK") stays literal.
   `business_profile_test.dart` fails if a sports word shows up under a studio profile.
 
 **Formatting and data**
-- Money is an `int` in whole currency units. Format it with `ArenaFormat.money(...)`, which uses the currency from `SettingsStore`.
-  Dates use the `ArenaFormat.*` helpers.
+- Money is an `int` in whole currency units. Format it with `SlotBookFormat.money(...)`, which uses the currency from `SettingsStore`.
+  Dates use the `SlotBookFormat.*` helpers.
 - Time slots are `TimeRange` in **minutes from the booking day's midnight**. Never use time strings for logic.
 - Prefs keys live in `AppCache` (add a group per feature). Persist a value with `CacheField<T>(key, default)`.
 - User-facing constants and contact info go in `AppStrings`. Per-client switches go in `AppClientConfig`.
 - Logging: `Logger.logs(...)`, never `print`.
-- ArenaBook code under `lib/` uses relative imports (some starter files use `package:arenabook/...`; leave them). Tests import `package:arenabook/...`.
+- SlotBook code under `lib/` uses relative imports (some starter files use `package:slotbook/...`; leave them). Tests import `package:slotbook/...`.
 
 ## Domain rules (invariants: don't break them)
 
 - **Resource types and resources are config-driven:** `AppClientConfig.resourceTypes` (from the client's config) drives forms, filters,
   Settings rates, the calendar, stats, and the tagline. Use `ResourceType.offered` (enabled) for pickers and filters, and `ResourceType.all` for lookups.
   `ResourceType.byId(id)` / `Resource.byId(id)` fall back to placeholders, so old bookings still render.
-  **Never change a resource type or resource `id` once used**: bookings and prefs keys (`arena_<id>_hourly_rate`) store it.
+  **Never change a resource type or resource `id` once used**: bookings and prefs keys (`slotbook_<id>_hourly_rate`) store it.
   Stored booking JSON keeps the legacy keys `sport` and `courtId`; don't rename them.
   A resource's `name` is what every screen and receipt shows; its optional `description` is extra detail shown under the
   name in the booking form's picker only (`Resource.detail` hides it when empty or the same as the name).
@@ -248,7 +248,7 @@ app through them.
 ## Tests (`test/`)
 
 - `booking_rules_test.dart` / `booking_service_test.dart`: pure logic. Use `InMemoryBookingRepository` and a fixed `clock`.
-- `arena_app_test.dart`: widget tests for the arena screens. `business_profile_test.dart` (wording, every profile),
+- `slotbook_app_test.dart`: widget tests for the app screens. `business_profile_test.dart` (wording, every profile),
   `booking_policy_test.dart` (time rules, opening hours, sessions, full day), `pricing_test.dart` (hourly vs typed price, v2 records),
   `resource_types_config_test.dart`, `app_access_test.dart`,
   `splash_and_logo_test.dart`, `keyboard_dismisser_test.dart`, `cache_field_test.dart`, `response_cache_test.dart`.

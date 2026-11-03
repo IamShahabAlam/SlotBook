@@ -51,7 +51,7 @@ class Terms {
   String get bookings => '$subject Bookings';
 }
 
-/// Optional parts of the app a business may or may not use. Data only; the defaults are ArenaBook's original behaviour.
+/// Optional parts of the app a business may or may not use. Data only; the defaults are SlotBook's original behaviour.
 class Features {
   const Features({this.discount = true, this.entryPass = true});
 

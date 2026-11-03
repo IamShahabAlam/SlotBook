@@ -6,15 +6,15 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:arenabook/app/service/getx_service/app_access_service.dart';
-import 'package:arenabook/app/service/getx_service/storage_service.dart';
-import 'package:arenabook/data/models/app_access.dart';
-import 'package:arenabook/presentation/arena/booking_form/booking_form_controller.dart';
-import 'package:arenabook/presentation/arena/dialogs/trial_expired_dialog.dart';
-import 'package:arenabook/presentation/arena/shell/booking_actions.dart';
-import 'package:arenabook/presentation/arena/shell/shell_controller.dart';
+import 'package:slotbook/app/service/getx_service/app_access_service.dart';
+import 'package:slotbook/app/service/getx_service/storage_service.dart';
+import 'package:slotbook/data/models/app_access.dart';
+import 'package:slotbook/presentation/slotbook/booking_form/booking_form_controller.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/trial_expired_dialog.dart';
+import 'package:slotbook/presentation/slotbook/shell/booking_actions.dart';
+import 'package:slotbook/presentation/slotbook/shell/shell_controller.dart';
 
-import 'arena_app_test.dart' show disposeApp, now, pumpApp, setUpServices;
+import 'slotbook_app_test.dart' show disposeApp, now, pumpApp, setUpServices;
 
 String gist({Object? status = 1, Object? enabled = true, Object? date = '', String client = 'demo'}) => jsonEncode({
   'clients': {
@@ -221,7 +221,7 @@ void main() {
     expect(dialog, findsNothing);
     BookingActions.newBooking();
     await tester.pumpAndSettle();
-    expect(ShellController.to.tab.value, ArenaTab.home);
+    expect(ShellController.to.tab.value, SlotBookTab.home);
     expect(dialog, findsOneWidget);
     expect(await BookingFormController.to.submit(), isNull);
     expect(dialog, findsOneWidget); // still one, not stacked
@@ -233,7 +233,7 @@ void main() {
     expect(dialog, findsNothing);
     BookingActions.newBooking();
     await tester.pumpAndSettle();
-    expect(ShellController.to.tab.value, ArenaTab.addBooking);
+    expect(ShellController.to.tab.value, SlotBookTab.addBooking);
 
     await disposeApp(tester);
   });
@@ -252,7 +252,7 @@ void main() {
     expect(find.text('WhatsApp Support'), findsOneWidget);
     BookingActions.newBooking();
     await tester.pumpAndSettle();
-    expect(ShellController.to.tab.value, ArenaTab.home, reason: 'bookings stay locked');
+    expect(ShellController.to.tab.value, SlotBookTab.home, reason: 'bookings stay locked');
 
     // Client added to the Gist but its trial is over: same dialog, now with the trial wording.
     body = gist(enabled: false);

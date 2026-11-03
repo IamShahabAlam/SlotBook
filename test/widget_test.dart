@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arenabook/app/utils/api_utility/api_utility.dart';
-import 'package:arenabook/app/utils/custom_functions/datetime_functions.dart';
-import 'package:arenabook/app/utils/custom_functions/functions.dart';
+import 'package:slotbook/app/utils/api_utility/api_utility.dart';
+import 'package:slotbook/app/utils/custom_functions/datetime_functions.dart';
+import 'package:slotbook/app/utils/custom_functions/functions.dart';
 
 // Unit tests for the pure (platform independent) helpers shipped with the starter.
 void main() {

@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:arenabook/app/config/app_strings.dart';
-import 'package:arenabook/app/service/getx_service/app_dev_mode_service.dart';
-import 'package:arenabook/app/service/getx_service/network_service.dart';
-import 'package:arenabook/app/service/getx_service/response_cache_service.dart';
-import 'package:arenabook/app/service/service_handler.dart/urls_store.dart';
-import 'package:arenabook/app/service/service_handler.dart/user_store.dart';
-import 'package:arenabook/app/utils/api_utility/api_utility.dart';
-import 'package:arenabook/app/utils/custom_functions/logger.dart';
-import 'package:arenabook/app/utils/custom_widgets/custom_toast.dart';
-import 'package:arenabook/data/providers/connection_provider.dart';
+import 'package:slotbook/app/config/app_strings.dart';
+import 'package:slotbook/app/service/getx_service/app_dev_mode_service.dart';
+import 'package:slotbook/app/service/getx_service/network_service.dart';
+import 'package:slotbook/app/service/getx_service/response_cache_service.dart';
+import 'package:slotbook/app/service/service_handler.dart/urls_store.dart';
+import 'package:slotbook/app/service/service_handler.dart/user_store.dart';
+import 'package:slotbook/app/utils/api_utility/api_utility.dart';
+import 'package:slotbook/app/utils/custom_functions/logger.dart';
+import 'package:slotbook/app/utils/custom_widgets/custom_toast.dart';
+import 'package:slotbook/data/providers/connection_provider.dart';
 
 // enums for http method selection
 enum Method { get, post, delete, put, patch, multiPartPost }

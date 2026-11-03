@@ -7,10 +7,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../data/models/app_access.dart';
-import '../../../presentation/arena/dialogs/trial_expired_dialog.dart';
+import '../../../presentation/slotbook/dialogs/trial_expired_dialog.dart';
 import '../../config/app_cache.dart';
 import '../../config/app_client_config.dart';
-import '../../config/arena_theme.dart';
+import '../../config/slotbook_theme.dart';
 import '../service_handler.dart/cache_field.dart';
 
 /// Gist body plus GitHub's own clock (the `Date` header), which the phone owner can't change.
@@ -143,7 +143,7 @@ class AppAccessService extends GetxService {
     final route = DialogRoute<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: context.arena.overlay,
+      barrierColor: context.slotbook.overlay,
       builder: (_) => const TrialExpiredDialog(),
     );
     _dialog = route;

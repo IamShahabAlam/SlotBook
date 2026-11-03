@@ -8,8 +8,8 @@ class AppAssets {
 }
 
 class _Images {
-  // ArenaBook "Square Arena" mark: 1024x1024, white on transparent.
-  // Always draw it with the ArenaLogo widget, which tints it to the theme.
+  // SlotBook "slot board" mark: 1024x1024, white on transparent, slots cut out as holes.
+  // Always draw it with the SlotBookLogo widget, which tints it to the theme.
   final String logo = "logo";
 
   final String placeHolder = "placehold";

@@ -1,6 +1,6 @@
-# ArenaBook: Project Specification (for backend selection)
+# SlotBook: Project Specification (for backend selection)
 
-A complete description of ArenaBook as of **2026-10-27** (branch `globe`): what it does, how its data is shaped, how it is
+A complete description of SlotBook as of **2026-10-27** (branch `globe`): what it does, how its data is shaped, how it is
 built and shipped per client, and where it is going. Its purpose is to let anyone (a person or an AI) choose and design a
 backend without reading the code. Section 11 turns all of it into backend requirements; section 13 lists the questions
 that still need an answer from the owner.
@@ -32,7 +32,7 @@ If this file disagrees with the code, the code wins.
 
 | | |
 |---|---|
-| **Product** | ArenaBook: a booking and payment **ledger** for businesses that rent out time on a resource. |
+| **Product** | SlotBook: a booking and payment **ledger** for businesses that rent out time on a resource. |
 | **Started as** | An app for indoor cricket and padel arena owners. |
 | **Now** | Generalised into "core + business profile + client": sports venues, space rental (rooms, studios, workspaces), event halls, vehicle rental. |
 | **User** | The business **owner** (or their front-desk person) on **one phone**. Customers never use the app. |
@@ -89,7 +89,7 @@ Industry words below (Court, Ground, Player, Fee…) come from the client's busi
 
 ### 3.1 App shell
 
-- Splash (ArenaBook brand), then one route `/arena` with an `IndexedStack` of five tabs; each tab keeps its scroll and filters.
+- Splash (SlotBook brand), then one route `/slotbook` with an `IndexedStack` of five tabs; each tab keeps its scroll and filters.
 - Bottom navigation: **Home, Bookings, + (New booking), Pending, Calendar**. The Pending tab shows a dot while any balance is due.
 - Header: client logo (or monogram) and business name, today's date.
 - Drawer: client logo + name + "`<subject>` Management", **Settings & Preferences**, **About Us & Dev Details**,
@@ -163,7 +163,7 @@ Industry words below (Court, Ground, Player, Fee…) come from the client's busi
 - Content: business logo and name, address and phone, status badge, `#TRF-1001`, "Official `<subject>` Booking Receipt",
   customer (name, phone, email), date, slots, resource, duration (× rate for hourly), fee, discount line (feature on and > 0),
   total, advance paid, balance paid with date, remaining balance.
-- **QR entry pass** (feature `entryPass`): payload `ARENABOOK|<id>|<yyyy-mm-dd>|<resourceId>|<start>-<end>,...`
+- **QR entry pass** (feature `entryPass`): payload `SLOTBOOK|<id>|<yyyy-mm-dd>|<resourceId>|<start>-<end>,...`
   and the caption from `Terms.passHint`. Nothing scans it yet (no verification app or server).
 - Actions:
   - **Share via WhatsApp**: renders the receipt widget to a PNG and opens the system share sheet. No server involved.
@@ -190,7 +190,7 @@ or disabled after a date (with a drawer countdown). A blocking, non-dismissable 
 
 ### 3.11 About and support
 
-- About: ArenaBook brand, tagline built from the client's resource types, version/build, "Licensed to `<client>`", developer website, open-source licences.
+- About: SlotBook brand, tagline built from the client's resource types, version/build, "Licensed to `<client>`", developer website, open-source licences.
 - Support: WhatsApp, call, email to DevCat Studios (constants in `AppStrings`).
 
 ---
@@ -335,12 +335,12 @@ All of these are plain data on purpose (decision D5), so they can move to a data
 
 | Key | Type | Scope | Meaning |
 |---|---|---|---|
-| `arena_currency_symbol` | String | business | Currency symbol shown on money. |
-| `arena_<typeId>_hourly_rate` | int | business | Hourly rate per resource type. |
+| `slotbook_currency_symbol` | String | business | Currency symbol shown on money. |
+| `slotbook_<typeId>_hourly_rate` | int | business | Hourly rate per resource type. |
 | `isDarkMode` | bool | device | Theme (default dark). |
 | `app_access_config` | String | device | Last Gist body from GitHub (trial switch). |
 | `app_access_latest_time` | int (ms) | device | Latest trusted time seen (defeats clock rewinds). |
-| `ThemeColor`, `userPreferenceId`, `Profile`, `UserId`, `Token`, `ApiUrl`, `Url`, `dev_mode`, `ResponseCacheKey` | — | starter | Unused by ArenaBook today. |
+| `ThemeColor`, `userPreferenceId`, `Profile`, `UserId`, `Token`, `ApiUrl`, `Url`, `dev_mode`, `ResponseCacheKey` | — | starter | Unused by SlotBook today. |
 
 Note: business settings and device settings are currently mixed in the same store; separating them is a Phase 6 item.
 
@@ -434,7 +434,7 @@ lib/
 ├── data/models/                    # Booking, TimeRange, ResourceType/Resource, BookingPolicy, PricingMode, AppAccess
 ├── data/rules/                     # BookingRules, BookingStats, InvoiceText
 ├── data/repositories/booking/      # BookingRepository + Hive + in-memory
-└── presentation/arena/             # shell, home, booking_form, bookings, pending, calendar, invoice, dialogs, widgets
+└── presentation/slotbook/             # shell, home, booking_form, bookings, pending, calendar, invoice, dialogs, widgets
 tool/clients.dart                   # add a client / declare assets / iOS icon
 scripts/build.(bat|sh)              # release build per client into dist/
 ```
@@ -465,12 +465,12 @@ writes to Hive plus an **outbox**, and a worker pushes and pulls. `BookingServic
 |---|---|
 | Selecting the client | `AppClientConfig.client = ClientConfig.forFlavor(appFlavor)`; compiled in, no copy steps. No flavor (tests) = `demo`; unknown flavor throws. |
 | Client config | `lib/app/config/clients/<id>.dart`: name, tagline, address, phone, logo, profile, resource types and resources, currency, country code, optional policy / pricing / features overrides. |
-| App identity | Android `applicationIdSuffix` / iOS bundle id: `com.devcatstudios.arenabook.<id>`. Launcher name is "ArenaBook" for all. |
+| App identity | Android `applicationIdSuffix` / iOS bundle id: `com.devcatstudios.slotbook.<id>`. Launcher name is "SlotBook" for all. |
 | Assets | `assets/clients/<id>/`, declared per flavor in pubspec, so a build ships only its own files. |
 | Launcher icon | Optional per client (Android source set, iOS `AppIcon-<id>`). |
 | Registration | `ClientConfig.all`, Android `build.gradle.kts`, iOS Podfile + Xcode configs + scheme, `.vscode/launch.json`. Done by `dart run tool/clients.dart add <id>`; a test fails if they drift. |
 | Licence switch | One Gist with a `clients` map keyed by client id. |
-| Build | `scripts\build.bat <id> apk` → `dist/ArenaBook-<id>-<version>.apk`. |
+| Build | `scripts\build.bat <id> apk` → `dist/SlotBook-<id>-<version>.apk`. |
 | Distribution | Sideloaded APKs today (store URLs empty). Release builds still use the debug key. |
 
 **Current clients:**

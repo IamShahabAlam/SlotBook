@@ -46,7 +46,7 @@ insert into public.business_profiles (
       "subject": "Ground", "resource": "Court", "resources": "Courts",
       "resource_type": "Sport", "customer": "Player", "fee": "Ground Fee",
       "place": "arena", "pass_hint": "Show at arena entry",
-      "receipt_thanks": "Thank you for playing at ArenaBook grounds! Present this receipt at entry.",
+      "receipt_thanks": "Thank you for playing with us! Present this receipt at entry.",
       "cancel_reason_hint": "e.g. Player requested cancellation due to rain"}$json$,
    30, 30, 1440, 60, null, null, false, 1, true, true, '[]', 1),
   (2, 'space_rental', 'Space Rental', $json${

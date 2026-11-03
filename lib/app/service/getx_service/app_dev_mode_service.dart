@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:arenabook/app/utils/api_utility/api_utility.dart';
-import 'package:arenabook/app/utils/custom_widgets/common_text.dart';
+import 'package:slotbook/app/utils/api_utility/api_utility.dart';
+import 'package:slotbook/app/utils/custom_widgets/common_text.dart';
 import 'package:vibration/vibration.dart';
 
 import '../../utils/custom_functions/logger.dart';

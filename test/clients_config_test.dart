@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arenabook/app/config/business/profiles.dart';
-import 'package:arenabook/app/config/clients/client_config.dart';
-import 'package:arenabook/app/config/clients/demo.dart';
+import 'package:slotbook/app/config/business/profiles.dart';
+import 'package:slotbook/app/config/clients/client_config.dart';
+import 'package:slotbook/app/config/clients/demo.dart';
 
 /// Quoted names inside the first `<prefix>...<close>` in [file], e.g. `listOf("a", "b")` -> [a, b].
 List<String> quotedList(String file, String prefix, String close) {

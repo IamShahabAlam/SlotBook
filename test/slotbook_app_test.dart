@@ -1,0 +1,519 @@
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'helpers/resource_types.dart';
+import 'package:get/get.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:slotbook/app/config/app_client_config.dart';
+import 'package:slotbook/app/config/business/business_profile.dart';
+import 'package:slotbook/app/config/app_strings.dart';
+import 'package:slotbook/app/config/slotbook_theme.dart';
+import 'package:slotbook/app/service/getx_service/app_access_service.dart';
+import 'package:slotbook/app/service/getx_service/booking_service.dart';
+import 'package:slotbook/app/service/getx_service/storage_service.dart';
+import 'package:slotbook/app/utils/custom_functions/slotbook_toast.dart';
+import 'package:slotbook/app/service/service_handler.dart/settings_store.dart';
+import 'package:slotbook/app/service/service_handler.dart/theme_store.dart';
+import 'package:slotbook/data/models/booking.dart';
+import 'package:slotbook/data/models/resource.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/repositories/booking/booking_repository.dart';
+import 'package:slotbook/data/rules/invoice_text.dart';
+import 'package:slotbook/presentation/slotbook/booking_form/booking_form_controller.dart';
+import 'package:slotbook/presentation/slotbook/booking_form/booking_form_view.dart';
+import 'package:slotbook/presentation/slotbook/calendar/calendar_controller.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/info_dialogs.dart';
+import 'package:slotbook/presentation/slotbook/invoice/contact_customer_sheet.dart';
+import 'package:slotbook/presentation/slotbook/invoice/invoice_sheet.dart';
+import 'package:slotbook/presentation/slotbook/shell/shell_controller.dart';
+import 'package:slotbook/presentation/slotbook/shell/shell_view.dart';
+
+final now = DateTime(2026, 10, 1, 12, 0);
+
+Future<void> setUpServices({bool dark = true, List<Booking> seed = const []}) async {
+  Get.testMode = true;
+  SharedPreferences.setMockInitialValues({'isDarkMode': dark});
+  await Get.putAsync(() => StorageService().init());
+  Get.put(ThemeStore());
+  Get.put(SettingsStore());
+  Get.put(AppAccessService(fetch: () async => null, clock: () => now)); // offline: never blocks
+  await Get.putAsync(() => BookingService(InMemoryBookingRepository(seed), clock: () => now).init());
+}
+
+Future<void> pumpApp(WidgetTester tester, {required bool dark, Size size = const Size(390, 844)}) async {
+  tester.view.physicalSize = size * 3;
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    GetMaterialApp(
+      theme: SlotBookTheme.light,
+      darkTheme: SlotBookTheme.dark,
+      themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+      initialBinding: ShellBinding(),
+      home: const ShellView(),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Disposes the shell (cancels its clock timer) so no timer outlives the test.
+Future<void> disposeApp(WidgetTester tester) async {
+  // Remove any toast so its timer doesn't outlive the test.
+  SlotBookToast.dismiss(animate: false);
+  await tester.pump(const Duration(seconds: 5));
+  await tester.pumpWidget(const SizedBox());
+  await Get.deleteAll(force: true);
+  await tester.pump(const Duration(seconds: 1));
+}
+
+Booking seeded({required String id, required int hour, int advance = 500, DateTime? date, ResourceType? resourceType}) => Booking(
+  id: id,
+  customerName: 'Ayesha Khan',
+  phone: '03219876543',
+  resourceType: resourceType ?? cricket,
+  resourceId: (resourceType ?? cricket) == cricket ? 'cricket-1' : 'padel-a',
+  date: date ?? DateTime(2026, 10, 1),
+  slots: [TimeRange.hour(hour)],
+  hourlyRate: 1500,
+  totalFee: 1500,
+  advancePaid: advance,
+  createdAt: now,
+  updatedAt: now,
+);
+
+/// The booking form's own list (IndexedStack builds every tab, so "the n-th Scrollable" is fragile).
+final formScrollable = find.descendant(of: find.byType(BookingFormView), matching: find.byType(Scrollable)).first;
+
+/// Scrolls [target] to the middle of the form, clear of the floating bottom nav (a tap there would miss).
+Future<void> reveal(WidgetTester tester, Finder target, {double delta = 250}) async {
+  await tester.scrollUntilVisible(target, delta, scrollable: formScrollable);
+  await Scrollable.ensureVisible(tester.element(target), alignment: 0.5);
+  await tester.pumpAndSettle();
+}
+
+void main() {
+  tearDown(() async => Get.deleteAll(force: true));
+
+  testWidgets('create a booking end to end, then the slot shows as booked', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await setUpServices();
+    await pumpApp(tester, dark: true);
+
+    expect(find.text('No upcoming bookings yet.'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    expect(find.text('Create New Booking'), findsOneWidget);
+
+    // 9AM .. 12PM have started at 12:00; 2PM is free.
+    final slot2pm = find.bySemanticsLabel('2PM');
+    await reveal(tester, slot2pm);
+    await tester.tap(slot2pm);
+    await tester.pump();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'e.g. Zain Malik'), 'Zain Malik');
+    await tester.enterText(find.widgetWithText(TextFormField, '03001234567'), '03001234567');
+
+    final submit = find.text('Confirm & Generate Invoice');
+    await tester.scrollUntilVisible(submit, 300, scrollable: formScrollable);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    // Invoice sheet for the new booking
+    expect(find.text('#TRF-1001'), findsWidgets);
+    expect(BookingService.to.bookings.single.totalFee, SettingsStore.to.rateFor(cricket)); // 1 hour at the configured rate
+
+    // Close the invoice -> spec: back to Home, which now lists the booking
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+    expect(ShellController.to.tab.value, SlotBookTab.home);
+    expect(find.text('Zain Malik'), findsOneWidget);
+
+    // The same slot is now blocked in the form (tapping "+" works even while the success toast is showing)
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    final booked = find.bySemanticsLabel('2PM, booked');
+    await tester.scrollUntilVisible(booked, -300, scrollable: formScrollable); // form kept its scroll position
+    expect(booked, findsOneWidget);
+
+    await disposeApp(tester);
+    semantics.dispose();
+  });
+
+  testWidgets('submitting without a slot shows an error and saves nothing', (tester) async {
+    await setUpServices();
+    await pumpApp(tester, dark: false);
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+
+    final name = find.widgetWithText(TextFormField, 'e.g. Zain Malik');
+    await tester.scrollUntilVisible(name, 300, scrollable: formScrollable);
+    await tester.enterText(name, 'Zain Malik');
+    await tester.enterText(find.widgetWithText(TextFormField, '03001234567'), '03001234567');
+    final submit = find.text('Confirm & Generate Invoice');
+    await tester.scrollUntilVisible(submit, 300, scrollable: formScrollable);
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Please select at least 1 time slot'), findsOneWidget);
+    expect(BookingService.to.bookings, isEmpty);
+    await disposeApp(tester);
+  });
+
+  // Every tab, both themes, a normal and a small phone: any overflow fails the test.
+  for (final dark in [true, false]) {
+    for (final size in const [Size(390, 844), Size(320, 640)]) {
+      testWidgets('all tabs render without layout errors (${dark ? 'dark' : 'light'}, ${size.width.toInt()}w)', (tester) async {
+        await setUpServices(
+          dark: dark,
+          seed: [
+            seeded(id: 'TRF-1001', hour: 20),
+            seeded(id: 'TRF-1002', hour: 21, advance: 1500, resourceType: padel),
+            seeded(id: 'TRF-1003', hour: 18, date: DateTime(2026, 9, 28)),
+          ],
+        );
+        await pumpApp(tester, dark: dark, size: size);
+        for (final tab in SlotBookTab.values) {
+          ShellController.to.go(tab);
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'tab $tab');
+        }
+        // Drawer
+        await tester.tap(find.byTooltip('Menu'));
+        await tester.pumpAndSettle();
+        expect(find.text('Settings & Preferences'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await disposeApp(tester);
+      });
+    }
+  }
+
+  testWidgets('time picker: 11PM booking runs past midnight, stopped by next-day booking', (tester) async {
+    final semantics = tester.ensureSemantics();
+    // Tomorrow 12:30-1:30 AM is already booked on cricket-1.
+    final early = seeded(id: 'TRF-1001', hour: 0, date: DateTime(2026, 10, 2));
+    await setUpServices(
+      seed: [
+        early.copyWith(slots: [const TimeRange(30, 90)]),
+      ],
+    );
+    await pumpApp(tester, dark: true);
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    final form = BookingFormController.to;
+
+    await reveal(tester, find.text('Evening'));
+    await tester.tap(find.text('Evening'));
+    await tester.pumpAndSettle();
+    final chip11 = find.bySemanticsLabel('11PM');
+    await reveal(tester, chip11);
+    await tester.tap(chip11);
+    await tester.pump();
+    expect(form.chosenSlots.single.label, '11PM - 12AM'); // default 1 h
+
+    await tester.tap(find.byTooltip('Longer'));
+    await tester.pump();
+    expect(form.chosenSlots.single.label, '11PM - 12:30AM (next day)');
+    expect(find.textContaining('(next day)'), findsOneWidget); // shown in the picker summary
+
+    await tester.tap(find.byTooltip('Longer'));
+    await tester.pump();
+    expect(form.duration.value, 90); // capped: tomorrow 12:30 AM is taken
+
+    semantics.dispose();
+    await disposeApp(tester);
+  });
+
+  testWidgets('time picker: duration stops at the next booking', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await setUpServices(seed: [seeded(id: 'TRF-1001', hour: 15)]); // 3-4 PM taken on cricket-1
+    await pumpApp(tester, dark: true);
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    final form = BookingFormController.to;
+
+    final chip230 = find.bySemanticsLabel('2:30PM');
+    await reveal(tester, chip230);
+    expect(find.bySemanticsLabel('3PM, booked'), findsOneWidget);
+    expect(find.bySemanticsLabel('12PM, past'), findsOneWidget); // clock is 12:00
+
+    await tester.tap(chip230);
+    await tester.pump();
+    expect(form.duration.value, 30); // shrunk from 1 h: only 30 min until 3 PM
+    expect(form.chosenSlots.single.label, '2:30PM - 3PM');
+
+    await tester.tap(find.byTooltip('Longer'));
+    await tester.pump();
+    expect(form.duration.value, 30); // still: would overlap the 3 PM booking
+
+    semantics.dispose();
+    await disposeApp(tester);
+  });
+
+  testWidgets('advance & discount start empty (0 is a hint), so typing replaces it', (tester) async {
+    await setUpServices();
+    await pumpApp(tester, dark: true);
+    final form = BookingFormController.to;
+    expect(form.advanceCtrl.text, isEmpty);
+    expect(form.discountCtrl.text, isEmpty);
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    await reveal(tester, find.byKey(const ValueKey('discount-field')), delta: 400);
+    expect(find.widgetWithText(TextField, '0'), findsNWidgets(2)); // the hints
+
+    form.selectStart(14 * 60); // 2-3 PM, one hour's fee
+    form.onAdvanceChanged('500');
+    expect(form.advance.value, 500);
+    form.selectStart(14 * 60); // clear the time: fee 0, advance capped back to 0
+    await tester.pump();
+    expect(form.advanceCtrl.text, isEmpty); // back to the hint, not a literal "0"
+    await disposeApp(tester);
+  });
+
+  testWidgets('resource picker shows each name, with the description underneath only when it adds something', (tester) async {
+    await setUpServices();
+    await pumpApp(tester, dark: true);
+    await tester.tap(find.byTooltip('New booking'));
+    await tester.pumpAndSettle();
+    final first = BookingFormController.to.resourceType.value.resources.first;
+    expect(find.text(first.name), findsOneWidget, reason: 'the closed field shows the name, as cards and invoices do');
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    for (final r in BookingFormController.to.resourceType.value.resources) {
+      expect(find.text(r.name), findsWidgets);
+      if (r.detail != null) expect(find.text(r.detail!), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+    await tester.tapAt(Offset.zero); // close the menu
+    await tester.pumpAndSettle();
+    await disposeApp(tester);
+  });
+
+  testWidgets('calendar shows one dot per distinct sport on a day, in config order', (tester) async {
+    final oct10 = DateTime(2026, 10, 10);
+    await setUpServices(
+      seed: [
+        seeded(id: 'TRF-1001', hour: 9, date: oct10),
+        seeded(id: 'TRF-1002', hour: 11, date: oct10),
+        seeded(id: 'TRF-1003', hour: 15, date: oct10, resourceType: padel),
+        seeded(id: 'TRF-1004', hour: 18, date: DateTime(2026, 10, 12), resourceType: padel).cancel(reason: 'Rain', advanceReturned: true, now: now),
+      ],
+    );
+    await pumpApp(tester, dark: true);
+
+    // 2 cricket + 1 padel = 2 dots; a cancelled booking leaves no dot.
+    expect(Get.find<CalendarController>().typesByDay, {
+      dateKey(oct10): [cricket, padel],
+    });
+    ShellController.to.go(SlotBookTab.calendar);
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel(RegExp('Cricket and Padel bookings')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await disposeApp(tester);
+  });
+
+  test('contact links: call and SMS with +92, WhatsApp without "+"', () {
+    final to = ContactCustomerSheet.links('0321-9876543');
+    expect(to.call.toString(), 'tel:+923219876543');
+    expect(to.sms.toString(), 'sms:+923219876543');
+    expect(to.whatsApp.toString(), 'https://wa.me/923219876543');
+  });
+
+  testWidgets('invoice contact button offers call, SMS and WhatsApp', (tester) async {
+    await setUpServices(seed: [seeded(id: 'TRF-1001', hour: 20)]);
+    await pumpApp(tester, dark: true);
+    InvoiceSheet.show('TRF-1001');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Contact customer'));
+    await tester.pumpAndSettle();
+    expect(find.text('Contact Ayesha Khan'), findsOneWidget);
+    expect(find.text('03219876543'), findsWidgets); // shown on the receipt and in the sheet
+    for (final option in ['Call', 'SMS', 'WhatsApp']) {
+      expect(find.text(option), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+
+    Navigator.of(tester.element(find.text('Contact Ayesha Khan'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Contact Ayesha Khan'), findsNothing);
+    expect(find.text('#TRF-1001'), findsOneWidget); // back on the invoice
+    await disposeApp(tester);
+  });
+
+  testWidgets('share sends a picture of the receipt, not text', (tester) async {
+    await setUpServices(seed: [seeded(id: 'TRF-1001', hour: 20)]);
+    await pumpApp(tester, dark: true);
+    InvoiceSheet.show('TRF-1001');
+    await tester.pumpAndSettle();
+
+    final original = InvoiceSheet.shareImage;
+    addTearDown(() => InvoiceSheet.shareImage = original);
+    (Uint8List, Booking)? shared;
+    InvoiceSheet.shareImage = (png, booking, _) async => shared = (png, booking);
+
+    // Rendering to an image needs the real event loop, so tap and wait inside runAsync.
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Share via WhatsApp'));
+      for (var i = 0; i < 50 && shared == null; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(shared, isNotNull, reason: 'nothing was shared');
+    final (png, booking) = shared!;
+
+    expect(booking.id, 'TRF-1001');
+    expect(png.sublist(1, 4), 'PNG'.codeUnits); // a real PNG file
+    final header = ByteData.sublistView(png, 16, 24); // IHDR width & height
+    expect(header.getUint32(0), 390 * 3); // full sheet width at the device's 3x density
+    expect(header.getUint32(4), lessThan(844 * 3)); // only the receipt region, not the whole screen
+    expect(tester.takeException(), isNull);
+    await disposeApp(tester);
+  });
+
+  testWidgets('support dialog offers WhatsApp, call and email', (tester) async {
+    await setUpServices();
+    await pumpApp(tester, dark: true);
+    SupportDialog.show();
+    await tester.pumpAndSettle();
+    expect(find.text('WhatsApp Support'), findsOneWidget);
+    expect(find.text('Call Helpline'), findsOneWidget);
+    expect(find.text('Email Support'), findsOneWidget);
+    // Buttons only: the number and address captions are hidden.
+    expect(find.text(AppStrings.supportEmail), findsNothing);
+    expect(find.text(AppStrings.supportPhone), findsNothing);
+    expect(tester.takeException(), isNull);
+    Navigator.of(tester.element(find.text('Email Support'))).pop();
+    await tester.pumpAndSettle();
+    await disposeApp(tester);
+  });
+
+  test('invoice text', () {
+    final b = seeded(id: 'TRF-1001', hour: 20);
+    final text = InvoiceText.whatsApp(b, currency: 'Rs');
+    expect(text, contains('#TRF-1001'));
+    expect(text, contains('8PM - 9PM'));
+    expect(text, contains('*Balance Due:* Rs 1,000'));
+    expect(InvoiceText.plain(b.settle(now), currency: 'AED'), contains('Due: AED 0'));
+
+    // The business heads the receipt, under the title.
+    final client = AppClientConfig.client;
+    final lines = text.split('\n');
+    expect(lines[1], '*${client.name}*');
+    expect(lines[2], '${client.address} · Ph: ${client.phone}');
+  });
+
+  testWidgets('the client\'s name and contacts show in the header, drawer, Home, invoice and About', (tester) async {
+    final client = AppClientConfig.client;
+    await setUpServices(seed: [seeded(id: 'TRF-1001', hour: 20)]);
+    await pumpApp(tester, dark: true);
+    expect(find.text(client.name), findsNWidgets(2), reason: 'header and Home banner');
+    expect(find.text(client.tagline!), findsOneWidget);
+    expect(find.text('SLOTBOOK'), findsNothing, reason: 'the client\'s name replaces the wordmark');
+
+    await tester.tap(find.byTooltip('Menu'));
+    await tester.pumpAndSettle();
+    expect(find.text(client.name), findsNWidgets(3), reason: '+ drawer');
+    Navigator.of(tester.element(find.text('Settings & Preferences'))).pop();
+    await tester.pumpAndSettle();
+
+    InvoiceSheet.show('TRF-1001');
+    await tester.pumpAndSettle();
+    expect(find.text(client.contactLine()), findsOneWidget);
+    Navigator.of(tester.element(find.text('#TRF-1001'))).pop();
+    await tester.pumpAndSettle();
+
+    AboutSlotBookDialog.show();
+    await tester.pumpAndSettle();
+    expect(find.text(client.address!), findsOneWidget);
+    expect(find.text(client.phone!), findsOneWidget);
+    expect(find.text('LICENSED TO'), findsOneWidget);
+    expect(find.text(client.name), findsNWidgets(3), reason: 'header, Home banner and About');
+    expect(find.text('${AppStrings.kappVersionWithDate} · build ${AppStrings.kappBuildNumber}'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    Navigator.of(tester.element(find.text('About SlotBook'))).pop();
+    await tester.pumpAndSettle();
+    await disposeApp(tester);
+  });
+
+  test('invoice text itemises the discount only when the feature is on', () {
+    final b = seeded(id: 'TRF-1001', hour: 20).copyWith(discount: 200); // fee 1500, advance 500
+    final on = InvoiceText.whatsApp(b, currency: 'Rs', discountEnabled: true);
+    expect(on, contains('*Ground Fee:* Rs 1,500'));
+    expect(on, contains('*Discount:* -Rs 200'));
+    expect(on, contains('*Total Fee:* Rs 1,300'));
+    expect(on, contains('*Balance Due:* Rs 800'));
+
+    final off = InvoiceText.whatsApp(b, currency: 'Rs', discountEnabled: false);
+    expect(off, isNot(contains('Discount')));
+    expect(off, contains('*Total Fee:* Rs 1,300')); // numbers still add up
+    expect(InvoiceText.plain(b, currency: 'Rs', discountEnabled: false), isNot(contains('discount')));
+  });
+
+  for (final enabled in [true, false]) {
+    testWidgets('booking form ${enabled ? 'shows' : 'hides'} the discount field (config)', (tester) async {
+      final original = AppClientConfig.features;
+      AppClientConfig.features = Features(discount: enabled);
+      addTearDown(() => AppClientConfig.features = original);
+      await setUpServices();
+      await pumpApp(tester, dark: true);
+      await tester.tap(find.byTooltip('New booking'));
+      await tester.pumpAndSettle();
+
+      final field = find.byKey(const ValueKey('discount-field'));
+      if (!enabled) {
+        await tester.drag(formScrollable, const Offset(0, -3000));
+        await tester.pumpAndSettle();
+        expect(field, findsNothing);
+        expect(find.text('Payable'), findsNothing);
+        await disposeApp(tester);
+        return;
+      }
+
+      // Pick 2PM (one hour at the configured rate), give 200 off: payable and balance follow.
+      final fee = SettingsStore.to.rateFor(cricket);
+      final slot = find.bySemanticsLabel('2PM');
+      final semantics = tester.ensureSemantics();
+      await reveal(tester, slot);
+      await tester.tap(slot);
+      await tester.pump();
+      await reveal(tester, field);
+      await tester.enterText(field, '200');
+      await tester.pumpAndSettle();
+      expect(BookingFormController.to.payable, fee - 200);
+      expect(BookingFormController.to.balance, fee - 200);
+
+      // More than the fee is capped to the fee.
+      await tester.enterText(field, '${fee * 10}');
+      await tester.pumpAndSettle();
+      expect(BookingFormController.to.discount.value, fee);
+      expect(BookingFormController.to.payable, 0);
+      semantics.dispose();
+      await disposeApp(tester);
+    });
+  }
+
+  for (final entryPass in [true, false]) {
+    testWidgets('invoice ${entryPass ? 'shows' : 'hides'} the QR entry pass (config)', (tester) async {
+      final original = AppClientConfig.features;
+      AppClientConfig.features = Features(entryPass: entryPass);
+      addTearDown(() => AppClientConfig.features = original);
+      await setUpServices(seed: [seeded(id: 'TRF-1001', hour: 20)]);
+      await pumpApp(tester, dark: true);
+
+      InvoiceSheet.show('TRF-1001');
+      await tester.pumpAndSettle();
+      expect(find.byType(QrImageView), entryPass ? findsOneWidget : findsNothing);
+      expect(find.text('VERIFIED SLOTBOOK PASS'), entryPass ? findsOneWidget : findsNothing);
+      expect(find.text(AppClientConfig.terms.passHint), entryPass ? findsOneWidget : findsNothing);
+      expect(find.text('Remaining Balance:'), findsOneWidget); // the rest of the receipt is unchanged
+
+      await disposeApp(tester);
+    });
+  }
+}

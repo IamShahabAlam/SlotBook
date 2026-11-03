@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:arenabook/app/config/app_strings.dart';
-import 'package:arenabook/app/utils/custom_functions/app_alerts.dart';
-import 'package:arenabook/app/utils/custom_widgets/custom_toast.dart';
+import 'package:slotbook/app/config/app_strings.dart';
+import 'package:slotbook/app/utils/custom_functions/app_alerts.dart';
+import 'package:slotbook/app/utils/custom_widgets/custom_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 

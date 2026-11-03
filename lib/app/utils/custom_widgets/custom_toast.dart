@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:arenabook/app/config/app_assets.dart';
-import 'package:arenabook/app/utils/utils.dart';
+import 'package:slotbook/app/config/app_assets.dart';
+import 'package:slotbook/app/utils/utils.dart';
 
 import '../../config/app_colors.dart';
 

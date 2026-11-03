@@ -49,7 +49,7 @@ class InitBindings implements Bindings {
     // Theme Manager (reads ThemeStore)
     Get.put<ThemeManager>(ThemeManager());
 
-    // ArenaBook ---------------------------------------------------------------
+    // SlotBook ---------------------------------------------------------------
     // Secrets (login session, cache key) in Keychain/Keystore, then Supabase (skipped when the build has no backend config).
     await Get.putAsync(() => SecureStorageService().init(), permanent: true);
     await SupabaseSetup.start(AppBuildConfig.backend, SecureSessionStorage(SecureStorageService.to.storage));

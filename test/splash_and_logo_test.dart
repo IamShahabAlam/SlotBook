@@ -5,12 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:arenabook/app/config/app_client_config.dart';
-import 'package:arenabook/app/config/arena_theme.dart';
-import 'package:arenabook/app/utils/custom_widgets/arena_logo.dart';
-import 'package:arenabook/presentation/arena/widgets/client_logo.dart';
-import 'package:arenabook/presentation/general/splash/splash_controller.dart';
-import 'package:arenabook/presentation/general/splash/splash_view.dart';
+import 'package:slotbook/app/config/app_client_config.dart';
+import 'package:slotbook/app/config/slotbook_theme.dart';
+import 'package:slotbook/app/utils/custom_widgets/slotbook_logo.dart';
+import 'package:slotbook/presentation/slotbook/widgets/client_logo.dart';
+import 'package:slotbook/presentation/general/splash/splash_controller.dart';
+import 'package:slotbook/presentation/general/splash/splash_view.dart';
 
 /// Same view, but without the timer that navigates to the shell (not registered in these tests).
 class _StaySplashController extends SplashController {
@@ -25,8 +25,8 @@ Future<void> pumpSplash(WidgetTester tester, {required bool dark, bool reduceMot
   Get.put<SplashController>(_StaySplashController());
   await tester.pumpWidget(
     GetMaterialApp(
-      theme: ArenaTheme.light,
-      darkTheme: ArenaTheme.dark,
+      theme: SlotBookTheme.light,
+      darkTheme: SlotBookTheme.dark,
       themeMode: dark ? ThemeMode.dark : ThemeMode.light,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
@@ -48,12 +48,12 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       }
       expect(tester.takeException(), isNull);
-      expect(find.byType(ArenaLogo), findsOneWidget);
+      expect(find.byType(SlotBookLogo), findsOneWidget);
       expect(find.text('Skip'), findsOneWidget);
 
       // The logo asset must really load (a missing/renamed file would report an error here).
-      final image = tester.widget<Image>(find.descendant(of: find.byType(ArenaLogo), matching: find.byType(Image)));
-      await tester.runAsync(() => precacheImage(image.image, tester.element(find.byType(ArenaLogo))));
+      final image = tester.widget<Image>(find.descendant(of: find.byType(SlotBookLogo), matching: find.byType(Image)));
+      await tester.runAsync(() => precacheImage(image.image, tester.element(find.byType(SlotBookLogo))));
       expect(tester.takeException(), isNull);
 
       await tester.pumpWidget(const SizedBox()); // stop the repeating animations
@@ -64,19 +64,19 @@ void main() {
     await pumpSplash(tester, dark: true, reduceMotion: true);
     // pumpAndSettle times out if anything keeps animating; the progress bar is the only (finite) one left.
     await tester.pumpAndSettle();
-    expect(find.byType(ArenaLogo), findsOneWidget);
+    expect(find.byType(SlotBookLogo), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ArenaLogo is tinted (white art would vanish on light backgrounds)', (tester) async {
+  testWidgets('SlotBookLogo is tinted (white art would vanish on light backgrounds)', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ArenaTheme.light,
-        home: const Scaffold(body: ArenaLogo(size: 40)),
+        theme: SlotBookTheme.light,
+        home: const Scaffold(body: SlotBookLogo(size: 40)),
       ),
     );
     final image = tester.widget<Image>(find.byType(Image));
-    expect(image.color, ArenaColors.light.cricketText);
+    expect(image.color, SlotBookColors.light.cricketText);
     expect(image.colorBlendMode, BlendMode.srcIn);
     // Decoded at display size, not the full 1024px asset.
     final provider = image.image as ResizeImage;
@@ -86,7 +86,7 @@ void main() {
   testWidgets('ClientLogo: monogram without a logo file', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ArenaTheme.light,
+        theme: SlotBookTheme.light,
         home: const Scaffold(body: ClientLogo(name: ' zeta studios')),
       ),
     );
@@ -97,7 +97,7 @@ void main() {
   testWidgets('ClientLogo: a logo file keeps its aspect ratio and is never cropped', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ArenaTheme.light,
+        theme: SlotBookTheme.light,
         home: const Scaffold(body: ClientLogo(size: 40, logoAsset: 'logo.png')),
       ),
     );
@@ -112,7 +112,7 @@ void main() {
   testWidgets('ClientLogo: a missing logo file falls back to the monogram', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: ArenaTheme.light,
+        theme: SlotBookTheme.light,
         home: const Scaffold(
           body: ClientLogo(name: 'Zeta', logoAsset: 'missing.png'),
         ),
@@ -127,7 +127,7 @@ void main() {
   // Contract for assets/images/logo.png, so a future logo swap can't silently break the app.
   test('logo.png: 1024px square, white on transparent, with a margin; old mark removed', () async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    final bytes = await rootBundle.load(ArenaLogo.assetPath);
+    final bytes = await rootBundle.load(SlotBookLogo.assetPath);
     final codec = await ui.instantiateImageCodec(bytes.buffer.asUint8List());
     final img = (await codec.getNextFrame()).image;
     expect([img.width, img.height], [1024, 1024]);

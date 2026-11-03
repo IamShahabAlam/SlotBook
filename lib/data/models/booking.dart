@@ -69,7 +69,7 @@ class Booking {
 
   int get totalMinutes => slots.fold(0, (sum, s) => sum + s.durationMinutes);
 
-  /// Money the arena actually holds for this booking.
+  /// Money the business actually holds for this booking.
   int get amountCollected {
     if (isCancelled) return advanceReturned ? 0 : advancePaid;
     return isSettled ? payable : advancePaid;

@@ -1,6 +1,6 @@
 @echo off
 rem Release build for one client: scripts\build.bat <client> <dev|prod> [apk|appbundle] [extra flutter args]
-rem Backend settings come from config\<env>.json. The output is copied to dist\ArenaBook-<client>-<version>[-dev].<apk|aab>.
+rem Backend settings come from config\<env>.json. The output is copied to dist\SlotBook-<client>-<version>[-dev].<apk|aab>.
 setlocal
 cd /d "%~dp0.."
 
@@ -45,10 +45,10 @@ if errorlevel 1 exit /b 1
 if not exist dist mkdir dist
 if /i "%TARGET%"=="apk" (
   set "SRC=build\app\outputs\flutter-apk\app-%CLIENT%-release.apk"
-  set "OUT=dist\ArenaBook-%CLIENT%-%VERSION%%SUFFIX%.apk"
+  set "OUT=dist\SlotBook-%CLIENT%-%VERSION%%SUFFIX%.apk"
 ) else (
   set "SRC=build\app\outputs\bundle\%CLIENT%Release\app-%CLIENT%-release.aab"
-  set "OUT=dist\ArenaBook-%CLIENT%-%VERSION%%SUFFIX%.aab"
+  set "OUT=dist\SlotBook-%CLIENT%-%VERSION%%SUFFIX%.aab"
 )
 copy /y "%SRC%" "%OUT%" >nul || exit /b 1
 echo Done: %OUT%

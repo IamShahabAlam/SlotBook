@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_size_config.dart';
-import 'package:arenabook/app/utils/custom_widgets/common_text.dart';
-import 'package:arenabook/app/utils/custom_widgets/gradient_button.dart';
+import 'package:slotbook/app/config/app_size_config.dart';
+import 'package:slotbook/app/utils/custom_widgets/common_text.dart';
+import 'package:slotbook/app/utils/custom_widgets/gradient_button.dart';
 
 
 import '../../config/app_border_radius.dart';

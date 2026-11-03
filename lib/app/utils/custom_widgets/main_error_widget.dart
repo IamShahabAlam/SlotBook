@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:arenabook/app/config/app_assets.dart';
-import 'package:arenabook/app/config/app_fontweights.dart';
-import 'package:arenabook/app/config/app_size_config.dart';
-import 'package:arenabook/app/service/getx_service/app_dev_mode_service.dart';
-import 'package:arenabook/app/utils/custom_widgets/common_text.dart';
+import 'package:slotbook/app/config/app_assets.dart';
+import 'package:slotbook/app/config/app_fontweights.dart';
+import 'package:slotbook/app/config/app_size_config.dart';
+import 'package:slotbook/app/service/getx_service/app_dev_mode_service.dart';
+import 'package:slotbook/app/utils/custom_widgets/common_text.dart';
 
 import '../custom_functions/app_alerts.dart';
 import '../utils.dart';

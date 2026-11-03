@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 
-import 'package:arenabook/data/providers/connection_provider.dart';
+import 'package:slotbook/data/providers/connection_provider.dart';
 
 import '../../../app/utils/custom_functions/logger.dart';
 

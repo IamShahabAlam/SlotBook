@@ -5,6 +5,6 @@ class PageNames {
   static String loginScreen = '/loginScreen'; // starter login, unused until accounts/sync are added
   static String dashBoardScreen = '/dashBoardScreen'; // starter placeholder, unused
 
-  // ArenaBook --------------
-  static String shellScreen = '/arena'; // bottom-nav shell: Home, Bookings, New Booking, Pending, Calendar
+  // SlotBook --------------
+  static String shellScreen = '/slotbook'; // bottom-nav shell: Home, Bookings, New Booking, Pending, Calendar
 }

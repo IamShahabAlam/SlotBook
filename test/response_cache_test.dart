@@ -9,9 +9,9 @@ import 'package:hive_ce/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:arenabook/app/config/app_cache.dart';
-import 'package:arenabook/app/service/getx_service/response_cache_service.dart';
-import 'package:arenabook/app/service/getx_service/storage_service.dart';
+import 'package:slotbook/app/config/app_cache.dart';
+import 'package:slotbook/app/service/getx_service/response_cache_service.dart';
+import 'package:slotbook/app/service/getx_service/storage_service.dart';
 
 void main() {
   late Directory dir;

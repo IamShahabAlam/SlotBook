@@ -23,7 +23,7 @@ void main() {
   String read(String path) => File('${root.path}/$path').readAsStringSync();
 
   setUp(() {
-    root = Directory.systemTemp.createTempSync('arenabook_clients_');
+    root = Directory.systemTemp.createTempSync('slotbook_clients_');
     for (final path in _files) {
       File('${root.path}/$path')
         ..parent.createSync(recursive: true)
@@ -53,8 +53,8 @@ void main() {
       expect('name = "$mode-royal_arena";'.allMatches(project).length, 3, reason: mode);
       expect('/* $mode-royal_arena */,'.allMatches(project).length, 3, reason: '$mode in all 3 configuration lists');
     }
-    expect('PRODUCT_BUNDLE_IDENTIFIER = com.devcatstudios.arenabook.royal_arena;'.allMatches(project).length, 3);
-    expect('PRODUCT_BUNDLE_IDENTIFIER = com.devcatstudios.arenabook.royal_arena.RunnerTests;'.allMatches(project).length, 3);
+    expect('PRODUCT_BUNDLE_IDENTIFIER = com.devcatstudios.slotbook.royal_arena;'.allMatches(project).length, 3);
+    expect('PRODUCT_BUNDLE_IDENTIFIER = com.devcatstudios.slotbook.royal_arena.RunnerTests;'.allMatches(project).length, 3);
     final ids = RegExp(r'^\t\t([0-9A-F]{24}) ', multiLine: true).allMatches(project).map((m) => m[1]).toList();
     expect(ids.toSet().length, ids.length, reason: 'object ids stay unique');
     expect(read('ios/Runner.xcodeproj/xcshareddata/xcschemes/royal_arena.xcscheme'), contains('buildConfiguration = "Release-royal_arena"'));

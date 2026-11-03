@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:arenabook/app/service/getx_service/storage_service.dart';
-import 'package:arenabook/app/service/service_handler.dart/cache_field.dart';
+import 'package:slotbook/app/service/getx_service/storage_service.dart';
+import 'package:slotbook/app/service/service_handler.dart/cache_field.dart';
 
 void main() {
   // Fresh in-memory SharedPreferences + StorageService before every test.

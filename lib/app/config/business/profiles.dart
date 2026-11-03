@@ -5,7 +5,7 @@ import 'business_profile.dart';
 
 // One profile per kind of business. A client picks one in its config (and may override its policy or pricing).
 
-/// Indoor sports arenas: ArenaBook's original wording and time rules (30-minute steps, open 24 hours).
+/// Indoor sports arenas: SlotBook's original wording and time rules (30-minute steps, open 24 hours).
 const sportsVenue = BusinessProfile(
   id: 'sports_venue',
   terms: Terms(
@@ -17,7 +17,7 @@ const sportsVenue = BusinessProfile(
     fee: 'Ground Fee',
     place: 'arena',
     passHint: 'Show at arena entry',
-    receiptThanks: 'Thank you for playing at ArenaBook grounds! Present this receipt at entry.',
+    receiptThanks: 'Thank you for playing with us! Present this receipt at entry.',
     cancelReasonHint: 'e.g. Player requested cancellation due to rain',
   ),
   policy: BookingPolicy(),

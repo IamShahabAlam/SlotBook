@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
-import 'package:arenabook/app/config/app_client_config.dart';
-import 'package:arenabook/app/config/business/business_profile.dart';
-import 'package:arenabook/app/config/business/profiles.dart';
-import 'package:arenabook/data/models/booking.dart';
-import 'package:arenabook/data/models/resource.dart';
-import 'package:arenabook/data/models/time_range.dart';
-import 'package:arenabook/data/rules/booking_rules.dart';
-import 'package:arenabook/data/rules/invoice_text.dart';
-import 'package:arenabook/presentation/arena/dialogs/cancel_booking_dialog.dart';
-import 'package:arenabook/presentation/arena/dialogs/info_dialogs.dart';
-import 'package:arenabook/presentation/arena/dialogs/trial_expired_dialog.dart';
-import 'package:arenabook/presentation/arena/invoice/invoice_sheet.dart';
-import 'package:arenabook/presentation/arena/shell/booking_actions.dart';
-import 'package:arenabook/presentation/arena/shell/shell_controller.dart';
-import 'arena_app_test.dart' as app;
+import 'package:slotbook/app/config/app_client_config.dart';
+import 'package:slotbook/app/config/business/business_profile.dart';
+import 'package:slotbook/app/config/business/profiles.dart';
+import 'package:slotbook/data/models/booking.dart';
+import 'package:slotbook/data/models/resource.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/rules/booking_rules.dart';
+import 'package:slotbook/data/rules/invoice_text.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/cancel_booking_dialog.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/info_dialogs.dart';
+import 'package:slotbook/presentation/slotbook/dialogs/trial_expired_dialog.dart';
+import 'package:slotbook/presentation/slotbook/invoice/invoice_sheet.dart';
+import 'package:slotbook/presentation/slotbook/shell/booking_actions.dart';
+import 'package:slotbook/presentation/slotbook/shell/shell_controller.dart';
+import 'slotbook_app_test.dart' as app;
 
 /// Neutral resource types: the wording under test comes from the profile, not from these names.
 const photo = ResourceType(
@@ -113,9 +113,9 @@ void main() {
     test('receipt keeps its original lines', () {
       final b = app.seeded(id: 'TRF-1001', hour: 20);
       final text = InvoiceText.whatsApp(b, currency: 'Rs');
-      expect(text, contains('*ARENABOOK GROUND RECEIPT*'));
+      expect(text, contains('*SLOTBOOK GROUND RECEIPT*'));
       expect(text, contains('*Court:* Turf Pitch 1 (Main)'));
-      expect(text, endsWith('Thank you for playing at ArenaBook grounds! Present this receipt at entry.'));
+      expect(text, endsWith('Thank you for playing with us! Present this receipt at entry.'));
       expect(InvoiceText.plain(b, currency: 'Rs'), contains('\nCourt: Turf Pitch 1 (Main)\n'));
       expect(BookingRules.validateDiscount(2000, 1500), 'Discount cannot be more than the ground fee');
       expect(TrialExpiredDialog.notActivatedMessage, contains('for your arena;'));
@@ -141,7 +141,7 @@ void main() {
       test('receipts, rules and messages use its words', () {
         final whatsApp = InvoiceText.whatsApp(booking('TRF-1001'), currency: 'Rs', discountEnabled: true);
         final plain = InvoiceText.plain(booking('TRF-1001'), currency: 'Rs');
-        expect(whatsApp, contains('*ARENABOOK ${t.subject.toUpperCase()} RECEIPT*'));
+        expect(whatsApp, contains('*SLOTBOOK ${t.subject.toUpperCase()} RECEIPT*'));
         expect(whatsApp, contains('*${t.resource}:* Studio A'));
         expect(whatsApp, endsWith(t.receiptThanks));
         expect(plain, contains('\n${t.resource}: Studio A\n'));

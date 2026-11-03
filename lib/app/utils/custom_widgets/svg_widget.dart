@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:arenabook/app/utils/utils.dart';
+import 'package:slotbook/app/utils/utils.dart';
 
 class SvgWidget extends StatelessWidget {
   Color color;

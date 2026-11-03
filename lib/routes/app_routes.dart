@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
 import 'app_pages.dart';
-import '../presentation/arena/shell/shell_controller.dart';
-import '../presentation/arena/shell/shell_view.dart';
+import '../presentation/slotbook/shell/shell_controller.dart';
+import '../presentation/slotbook/shell/shell_view.dart';
 import '../presentation/general/auth_views/login/login_controller.dart';
 import '../presentation/general/auth_views/login/login_view.dart';
 import '../presentation/general/dashboard/dashboard_controller.dart';
@@ -36,7 +36,7 @@ List<GetPage> appRoutes() => [
     transition: Transition.leftToRightWithFade,
     transitionDuration: const Duration(milliseconds: 500),
   ),
-  // ArenaBook shell (all main tabs)
+  // SlotBook shell (all main tabs)
   GetPage(
     name: PageNames.shellScreen,
     page: () => const ShellView(),

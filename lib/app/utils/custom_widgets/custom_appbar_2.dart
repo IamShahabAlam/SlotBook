@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:arenabook/app/config/app_colors.dart';
+import 'package:slotbook/app/config/app_colors.dart';
 import '../../config/app_strings.dart';
 import '../../config/app_textstyle.dart';
 import 'common_text.dart';

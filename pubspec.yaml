@@ -1,5 +1,5 @@
-name: arenabook
-description: "ArenaBook - indoor cricket & padel ground booking and management for arena owners."
+name: slotbook
+description: "SlotBook - booking and payment ledger for businesses that rent out time (courts, studios, halls, vehicles)."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

@@ -1,0 +1,390 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+
+import '../../../app/config/app_client_config.dart';
+import '../../../app/config/app_strings.dart';
+import '../../../app/config/slotbook_theme.dart';
+import '../../../app/service/getx_service/app_access_service.dart';
+import '../../../app/service/getx_service/booking_service.dart';
+import '../../../app/utils/formatters/slotbook_format.dart';
+import '../booking_form/booking_form_view.dart';
+import '../bookings/bookings_view.dart';
+import '../calendar/calendar_view.dart';
+import '../dialogs/info_dialogs.dart';
+import '../dialogs/settings_dialog.dart';
+import '../home/home_view.dart';
+import '../pending/pending_view.dart';
+import '../widgets/slotbook_widgets.dart';
+import '../widgets/motion.dart';
+import 'booking_actions.dart';
+import 'shell_controller.dart';
+
+class ShellView extends GetView<ShellController> {
+  const ShellView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (!controller.handleBack()) SystemNavigator.pop();
+      },
+      child: Scaffold(
+        key: controller.scaffoldKey,
+        extendBody: true, // content scrolls behind the translucent nav bar
+        drawer: const _SlotBookDrawer(),
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              const _SlotBookHeader(),
+              Expanded(
+                child: Obx(() {
+                  final current = controller.tab.value;
+                  Widget tab(SlotBookTab t, Widget view) => TabFade(active: current == t, child: view);
+                  return IndexedStack(
+                    index: current.index,
+                    children: [
+                      tab(SlotBookTab.home, const HomeView()),
+                      tab(SlotBookTab.bookings, const BookingsView()),
+                      tab(SlotBookTab.addBooking, const BookingFormView()),
+                      tab(SlotBookTab.pending, const PendingView()),
+                      tab(SlotBookTab.calendar, const CalendarView()),
+                    ],
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: const _SlotBookBottomNav(),
+        backgroundColor: c.background,
+      ),
+    );
+  }
+}
+
+class _SlotBookHeader extends StatelessWidget {
+  const _SlotBookHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      decoration: BoxDecoration(
+        color: c.background,
+        border: Border(bottom: BorderSide(color: c.border)),
+      ),
+      child: Row(
+        children: [
+          HeaderIconButton(icon: Icons.menu_rounded, tooltip: 'Menu', onPressed: () => ShellController.to.scaffoldKey.currentState?.openDrawer()),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              children: [
+                const ClientLogo(size: 28, radius: 8),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppClientConfig.client.name,
+                        style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 1),
+                      Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(color: c.cricket, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Obx(
+                              () => Text(
+                                SlotBookFormat.shortDay(BookingService.to.now()),
+                                style: context.text.labelSmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          HeaderIconButton(icon: Icons.tune_rounded, tooltip: 'Settings', onPressed: SettingsDialog.show),
+          const SizedBox(width: 6),
+          HeaderIconButton(icon: Icons.add_rounded, tooltip: 'New booking', accent: true, onPressed: BookingActions.newBooking),
+        ],
+      ),
+    );
+  }
+}
+
+class _SlotBookBottomNav extends GetView<ShellController> {
+  const _SlotBookBottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return Container(
+      height: 68 + bottomInset,
+      padding: EdgeInsets.only(bottom: bottomInset),
+      decoration: BoxDecoration(
+        color: c.navBar,
+        border: Border(top: BorderSide(color: c.border)),
+      ),
+      child: Obx(() {
+        final current = controller.tab.value;
+        final hasDues = BookingService.to.bookings.any((b) => b.balanceDue > 0);
+        Widget item(SlotBookTab tab, IconData icon, IconData activeIcon, String label, {bool dot = false}) => Expanded(
+          child: _NavItem(icon: current == tab ? activeIcon : icon, label: label, active: current == tab, dot: dot, onTap: () => controller.go(tab)),
+        );
+        return Row(
+          children: [
+            item(SlotBookTab.home, Icons.home_outlined, Icons.home_rounded, 'Home'),
+            item(SlotBookTab.bookings, Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Bookings'),
+            Expanded(
+              child: Center(
+                child: Transform.translate(
+                  offset: const Offset(0, -14),
+                  child: Semantics(
+                    button: true,
+                    label: 'New booking',
+                    child: GestureDetector(
+                      onTap: BookingActions.newBooking,
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          gradient: SlotBookColors.ctaGradient,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: c.background, width: 4),
+                          boxShadow: [BoxShadow(color: SlotBookColors.emerald.withValues(alpha: 0.35), blurRadius: 18)],
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: context.motion(const Duration(milliseconds: 250)),
+                          transitionBuilder: (child, animation) => RotationTransition(
+                            turns: Tween<double>(begin: -0.25, end: 0).animate(animation),
+                            child: FadeTransition(opacity: animation, child: child),
+                          ),
+                          child: Icon(
+                            current == SlotBookTab.addBooking ? Icons.edit_note_rounded : Icons.add_rounded,
+                            key: ValueKey(current == SlotBookTab.addBooking),
+                            color: c.onAccent,
+                            size: 26,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            item(SlotBookTab.pending, Icons.history_rounded, Icons.history_rounded, 'Pending', dot: hasDues),
+            item(SlotBookTab.calendar, Icons.calendar_month_outlined, Icons.calendar_month_rounded, 'Calendar'),
+          ],
+        );
+      }),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({required this.icon, required this.label, required this.active, required this.onTap, this.dot = false});
+
+  final IconData icon;
+  final String label;
+  final bool active;
+  final bool dot;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+    final color = active ? c.cricketText : c.textSecondary;
+    final duration = context.motion(const Duration(milliseconds: 220));
+    return Semantics(
+      button: true,
+      selected: active,
+      label: dot ? '$label, payments due' : label,
+      excludeSemantics: true,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 36,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedScale(
+                  scale: active ? 1.12 : 1,
+                  duration: duration,
+                  curve: Curves.easeOutBack,
+                  child: Icon(icon, color: color, size: 23),
+                ),
+                // Always present; scales in/out so the dot "pops" instead of blinking.
+                Positioned(
+                  right: -3,
+                  top: -1,
+                  child: AnimatedScale(
+                    scale: dot ? 1 : 0,
+                    duration: duration,
+                    curve: Curves.easeOutBack,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: c.warning,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: c.navBar, width: 1.5),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: context.text.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SlotBookDrawer extends StatelessWidget {
+  const _SlotBookDrawer();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+
+    var itemIndex = 0;
+    Widget item(IconData icon, Color iconColor, String label, Future<void> Function() open) => Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: c.surfaceMuted,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: c.border),
+        ),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          leading: Icon(icon, color: iconColor, size: 20),
+          title: Text(label, style: context.text.labelLarge),
+          trailing: Icon(Icons.chevron_right_rounded, color: c.textMuted),
+          onTap: () {
+            Navigator.of(context).pop(); // close drawer first
+            open();
+          },
+        ),
+      ),
+    ).entrance(context, index: itemIndex++, delay: const Duration(milliseconds: 120)); // replays each time the drawer opens
+
+    return Drawer(
+      width: 300,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(24))),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const ClientLogo(size: 46, elevation: true).popIn(context),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppClientConfig.client.name,
+                          style: context.text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text('${AppClientConfig.terms.subject} Management', style: context.text.labelSmall?.copyWith(color: c.cricketText)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Divider(color: c.border),
+              const SizedBox(height: 16),
+              item(Icons.settings_rounded, c.cricketText, 'Settings & Preferences', SettingsDialog.show),
+              item(Icons.info_rounded, c.padelText, 'About Us & Dev Details', AboutSlotBookDialog.show),
+              item(Icons.support_agent_rounded, c.warningText, 'Contact Support', SupportDialog.show),
+              const Spacer(),
+              const _TrialNotice(),
+              Divider(color: c.border),
+              const SizedBox(height: 12),
+              Center(
+                child: Text('${AppStrings.appName} Platform', style: context.text.labelMedium?.copyWith(color: c.textSecondary)),
+              ),
+              Center(
+                child: Text('${AppStrings.kappVersionWithDate} (${AppStrings.kappBuildNumber})', style: context.text.labelSmall?.copyWith(color: c.textMuted)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Drawer notice while a dated trial is running (IsAppEnable false + AppDisableAfterDate). Updates when the Gist is fetched.
+class _TrialNotice extends StatelessWidget {
+  const _TrialNotice();
+
+  static String message(int days) => 'You are on your trial version, $days ${days == 1 ? 'day' : 'days'} remaining.';
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.slotbook;
+    return Obx(() {
+      final days = AppAccessService.to.trialDaysLeft.value;
+      if (days == null) return const SizedBox.shrink();
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: c.warning.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.warning.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.hourglass_bottom_rounded, size: 18, color: c.warningText),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message(days), style: context.text.labelMedium?.copyWith(color: c.warningText)),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}

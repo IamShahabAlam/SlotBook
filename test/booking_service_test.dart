@@ -6,9 +6,9 @@ import 'helpers/resource_types.dart';
 import 'helpers/temp_dir.dart';
 import 'package:hive_ce/hive.dart';
 
-import 'package:arenabook/app/service/getx_service/booking_service.dart';
-import 'package:arenabook/data/models/time_range.dart';
-import 'package:arenabook/data/repositories/booking/booking_repository.dart';
+import 'package:slotbook/app/service/getx_service/booking_service.dart';
+import 'package:slotbook/data/models/time_range.dart';
+import 'package:slotbook/data/repositories/booking/booking_repository.dart';
 
 void main() {
   final now = DateTime(2026, 10, 1, 12);
@@ -131,7 +131,7 @@ void main() {
     late Directory dir;
 
     setUp(() async {
-      dir = await Directory.systemTemp.createTemp('arenabook_test');
+      dir = await Directory.systemTemp.createTemp('slotbook_test');
       Hive.init(dir.path);
     });
 

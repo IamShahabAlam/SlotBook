@@ -1,6 +1,6 @@
-# ArenaBook Expansion Plan
+# SlotBook Expansion Plan
 
-How ArenaBook grows from an arena booking app into a booking and payment ledger for any business that rents out
+How SlotBook grows from an arena booking app into a booking and payment ledger for any business that rents out
 time on a resource (courts, studios, rooms, halls, cars), without becoming several apps.
 
 Status: **agreed 2026-10-21**. Work happens phase by phase; each phase gets a short design note in chat before code.
@@ -73,7 +73,7 @@ lib/app/config/clients/         ClientConfig + one file per client (profile + re
 lib/data/models/                resource.dart (ResourceType, Resource), booking.dart, time_range.dart, pricing.dart
 lib/data/rules/                 BookingRules (reads BookingPolicy), BookingStats, InvoiceText (reads Terms)
 lib/data/repositories/          booking/ now; catalog/ and settings/ in Phase 6
-lib/presentation/arena/         unchanged folder name (product is still ArenaBook)
+lib/presentation/slotbook/      the app screens (renamed from arena/ with the SlotBook rebrand)
 ```
 
 ## 4. Ready for the database

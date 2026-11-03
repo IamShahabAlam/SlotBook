@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:arenabook/app/config/app_build_config.dart';
-import 'package:arenabook/app/service/getx_service/secure_storage_service.dart';
-import 'package:arenabook/app/service/supabase/secure_session_storage.dart';
-import 'package:arenabook/app/service/supabase/supabase_setup.dart';
+import 'package:slotbook/app/config/app_build_config.dart';
+import 'package:slotbook/app/service/getx_service/secure_storage_service.dart';
+import 'package:slotbook/app/service/supabase/secure_session_storage.dart';
+import 'package:slotbook/app/service/supabase/supabase_setup.dart';
 
 /// A legacy Supabase key: an (unsigned, for tests) JWT carrying [role].
 String jwtKey(String role) {
