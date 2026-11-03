@@ -44,3 +44,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Backend config per environment (copy config/example.json); only the template is committed
+/config/*.json
+!/config/example.json
