@@ -1,0 +1,142 @@
+-- Shared fixtures, pulled into each test with \ir (pg_prove only runs *.sql / *.pg, so this file isn't a test).
+-- Everything lives in schema tests inside the test's transaction and is rolled back with it.
+-- World: client test_a (owner_a, staff_a; Cricket A1, A2 at 3000/h, Padel P1 at 4000/h),
+--        client test_b (owner_b; Cricket B1 at 2000/h). Every user is signed in on phone 'phone1'.
+
+create extension if not exists pgtap with schema extensions;
+
+create schema tests;
+grant usage on schema tests to anon, authenticated;
+alter default privileges in schema tests grant execute on functions to anon, authenticated;
+
+create table tests.saved (k text primary key, v jsonb);
+
+-- deterministic auth ids so tests can sign in as anyone
+create function tests.uid(p_email text) returns uuid language sql immutable
+as $$ select md5(p_email)::uuid $$;
+create function tests.sid(p_email text, p_phone text) returns uuid language sql immutable
+as $$ select md5(p_email || '#' || p_phone)::uuid $$;
+
+-- "Today" in the clients' time zone (all test clients use Asia/Karachi).
+create function tests.today() returns date language sql stable
+as $$ select (now() at time zone 'Asia/Karachi')::date $$;
+
+-- Act as a signed-in user on one phone (JWT claims like Supabase Auth), as anon, or back as postgres.
+create function tests.login(p_email text, p_phone text default 'phone1', p_aal text default 'aal1')
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object(
+    'sub', tests.uid(p_email), 'session_id', tests.sid(p_email, p_phone),
+    'role', 'authenticated', 'aal', p_aal)::text, true);
+  perform set_config('role', 'authenticated', true);
+end $$;
+
+create function tests.as_anon() returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', '{"role": "anon"}', true);
+  perform set_config('role', 'anon', true);
+end $$;
+
+create function tests.logout() returns void language plpgsql as $$
+begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+
+-- Lookups that work under any role (security definer, owned by postgres).
+create function tests.client_id(p_code text) returns integer language sql stable security definer
+as $$ select client_id from public.clients where client_code = p_code $$;
+create function tests.user_id(p_email text) returns integer language sql stable security definer
+as $$ select user_id from public.users where email = p_email $$;
+create function tests.resource_id(p_code text, p_name text) returns integer language sql stable security definer
+as $$ select r.resource_id from public.resources r join public.clients c using (client_id)
+      where c.client_code = p_code and r.name = p_name $$;
+create function tests.type_id(p_code text, p_name text) returns integer language sql stable security definer
+as $$ select t.resource_type_id from public.resource_types t join public.clients c using (client_id)
+      where c.client_code = p_code and t.short_name = p_name $$;
+create function tests.session_id(p_code text, p_label text) returns integer language sql stable security definer
+as $$ select s.booking_session_id from public.booking_sessions s join public.clients c using (client_id)
+      where c.client_code = p_code and s.label = p_label $$;
+create function tests.booking(p_id integer) returns public.bookings language sql stable security definer
+as $$ select * from public.bookings where booking_id = p_id $$;
+create function tests.counter(p_code text) returns integer language sql stable security definer
+as $$ select last_invoice_number from public.invoice_counters where client_id = tests.client_id(p_code) $$;
+
+-- Remember a value between statements (e.g. a booking returned by an RPC).
+create function tests.keep(p_k text, p_v jsonb) returns jsonb language sql security definer
+as $$ insert into tests.saved values (p_k, p_v) on conflict (k) do update set v = excluded.v returning v $$;
+create function tests.got(p_k text) returns jsonb language sql stable security definer
+as $$ select v from tests.saved where k = p_k $$;
+create function tests.got_id(p_k text) returns integer language sql stable security definer
+as $$ select (v ->> 'booking_id')::integer from tests.saved where k = p_k $$;
+
+-- Create an auth user and link it to a client (run as postgres).
+create function tests.add_user(p_code text, p_email text, p_role text) returns integer language plpgsql as $$
+begin
+  insert into auth.users (id, email) values (tests.uid(p_email), p_email) on conflict (id) do nothing;
+  return public.admin_add_user(tests.client_id(p_code), p_email, initcap(split_part(p_email, '@', 1)), p_role);
+end $$;
+
+-- Sign in on a phone: login + start_session, like the app after the email code. Leaves the caller signed in.
+create function tests.sign_in(p_email text, p_code text, p_phone text default 'phone1', p_replace boolean default false)
+returns jsonb language plpgsql as $$
+begin
+  perform tests.login(p_email, p_phone);
+  return public.start_session(p_code, p_phone, '', 'Phone ' || p_phone, 'android', '1.0.0', p_replace);
+end $$;
+
+-- create_booking with test defaults (runs as the current role).
+create function tests.book(
+  p_resource_id integer, p_date date, p_start integer, p_end integer,
+  p_advance integer default 0, p_discount integer default 0, p_manual_fee integer default null,
+  p_session_id integer default null, p_uid uuid default gen_random_uuid(),
+  p_name text default 'Ali Khan', p_phone text default '0300-1234567', p_email text default '',
+  p_notes text default '')
+returns jsonb language sql as $$
+  select public.create_booking(p_uid, p_resource_id, p_date, p_start, p_end, p_session_id,
+                               p_name, p_phone, p_email, p_notes, p_manual_fee, p_discount, p_advance)
+$$;
+
+-- update_booking that keeps every field of booking p_id except the ones passed.
+create function tests.edit(
+  p_id integer, p_resource_id integer default null, p_date date default null,
+  p_start integer default null, p_end integer default null,
+  p_received integer default null, p_discount integer default null, p_manual_fee integer default null,
+  p_name text default null, p_expected timestamptz default null, p_use_expected boolean default false)
+returns jsonb language plpgsql as $$
+declare
+  b public.bookings := tests.booking(p_id);
+begin
+  return public.update_booking(
+    p_id, case when p_use_expected then p_expected else b.updated_at end,
+    coalesce(p_resource_id, b.resource_id), coalesce(p_date, b.booking_date),
+    coalesce(p_start, b.start_minute), coalesce(p_end, b.end_minute), b.booking_session_id,
+    coalesce(p_name, b.customer_name), b.customer_phone, b.customer_email, b.notes,
+    coalesce(p_manual_fee, b.total_fee), coalesce(p_discount, b.discount), coalesce(p_received, b.advance_paid));
+end $$;
+
+-- the shared world
+create function tests.world() returns void language plpgsql as $$
+begin
+  perform public.admin_create_client($j${
+    "client_code": "test_a", "name": "Test Arena A", "business_profile_code": "sports_venue", "plan_code": "monthly",
+    "resource_types": [
+      {"name": "Indoor Cricket", "short_name": "Cricket", "icon_key": "sports_cricket", "tone": "emerald",
+       "hourly_rate": 3000, "sort_order": 1, "resources": [{"name": "A1"}, {"name": "A2"}]},
+      {"name": "Padel Court", "short_name": "Padel", "icon_key": "sports_tennis", "tone": "blue",
+       "hourly_rate": 4000, "sort_order": 2, "resources": [{"name": "P1"}]}]}$j$);
+  perform public.admin_create_client($j${
+    "client_code": "test_b", "name": "Test Arena B", "business_profile_code": "sports_venue", "plan_code": "monthly",
+    "resource_types": [
+      {"name": "Indoor Cricket", "short_name": "Cricket", "icon_key": "sports_cricket", "tone": "emerald",
+       "hourly_rate": 2000, "resources": [{"name": "B1"}]}]}$j$);
+  perform tests.add_user('test_a', 'owner_a@test.dev', 'owner');
+  perform tests.add_user('test_a', 'staff_a@test.dev', 'staff');
+  perform tests.add_user('test_b', 'owner_b@test.dev', 'owner');
+  perform tests.sign_in('owner_a@test.dev', 'test_a');
+  perform tests.sign_in('staff_a@test.dev', 'test_a');
+  perform tests.sign_in('owner_b@test.dev', 'test_b');
+  perform tests.logout();
+end $$;
+
+select tests.world();

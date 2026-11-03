@@ -11,6 +11,9 @@ const configDir = 'lib/app/config/clients';
 const pbxproj = 'ios/Runner.xcodeproj/project.pbxproj';
 const schemesDir = 'ios/Runner.xcodeproj/xcshareddata/xcschemes';
 
+/// VS Code runs every client against the dev backend (config/dev.json, copied from config/example.json).
+const launchConfigArg = '--dart-define-from-file=config/dev.json';
+
 final commands = <String, String Function(Directory root, String id)>{'add': addClient, 'assets': addAssets, 'ios-icon': useIosIcon};
 
 void main(List<String> args) {
@@ -224,7 +227,7 @@ String _addLaunchEntries(String json, String id) {
     '            "type": "dart",',
     '            "program": "lib/main.dart",',
     if (mode != null) '            "flutterMode": "$mode",',
-    '            "args": ["--flavor", "$id"]',
+    '            "args": ["--flavor", "$id", "$launchConfigArg"]',
     '        }',
   ].join(eol);
   final last = json.lastIndexOf('}', json.lastIndexOf(']'));

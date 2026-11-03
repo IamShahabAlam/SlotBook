@@ -1,0 +1,6 @@
+# Supabase CLI local state and secrets
+.branches
+.temp
+.env
+.env.*
+signing_keys.json

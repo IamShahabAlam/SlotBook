@@ -54,11 +54,15 @@ Never change a client id, sport id or court id once used. Turn a sport off with 
 ### Build a client
 
 ```bash
-scripts\build.bat <client> [apk|appbundle]        # Windows
-bash scripts/build.sh <client> [apk|appbundle|ipa] # macOS / Linux (ipa needs a Mac)
+scripts\build.bat <client> <dev|prod> [apk|appbundle]        # Windows
+bash scripts/build.sh <client> <dev|prod> [apk|appbundle|ipa] # macOS / Linux (ipa needs a Mac)
 ```
 
-The output goes to `dist/ArenaBook-<client>-<version>.<apk|aab|ipa>`. Extra arguments are passed to `flutter build`.
+The output goes to `dist/ArenaBook-<client>-<version>.<apk|aab|ipa>` (`-dev` is added for dev builds). Extra arguments are passed to `flutter build`.
+
+The backend comes from `config/<env>.json` (Supabase URL and anon key). Copy `config/example.json` to `config/dev.json`
+and `config/prod.json` and fill them in; they are gitignored. VS Code's launch entries use `config/dev.json`.
+Left empty, the app starts without the backend. A prod build refuses to start without one.
 
 ### Add a client
 

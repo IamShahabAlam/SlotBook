@@ -83,9 +83,9 @@ void main() {
     test('VS Code launch entries', () {
       final json = File('.vscode/launch.json').readAsStringSync().replaceAll(RegExp(r'^\s*//.*$', multiLine: true), '');
       final configs = (jsonDecode(json)['configurations'] as List).cast<Map<String, dynamic>>();
-      final flavors = configs.map((c) => (c['args'] as List?)?.join(' ')).toSet();
+      final args = configs.map((c) => (c['args'] as List?)?.join(' ')).toSet();
       for (final id in ids) {
-        expect(flavors, contains('--flavor $id'), reason: id);
+        expect(args, contains('--flavor $id --dart-define-from-file=config/dev.json'), reason: '$id runs against config/dev.json');
       }
     });
 

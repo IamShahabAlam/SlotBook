@@ -5,9 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
+import '../../../app/config/app_build_config.dart';
 import '../../../app/service/getx_service/app_access_service.dart';
 import '../../../app/service/getx_service/booking_service.dart';
+import '../../../app/service/getx_service/secure_storage_service.dart';
 import '../../../app/service/service_handler.dart/settings_store.dart';
+import '../../../app/service/supabase/secure_session_storage.dart';
+import '../../../app/service/supabase/supabase_setup.dart';
 import '../../../data/repositories/booking/booking_repository.dart';
 
 import '../../../app/service/getx_service/app_dev_mode_service.dart';
@@ -46,6 +50,9 @@ class InitBindings implements Bindings {
     Get.put<ThemeManager>(ThemeManager());
 
     // ArenaBook ---------------------------------------------------------------
+    // Secrets (login session, cache key) in Keychain/Keystore, then Supabase (skipped when the build has no backend config).
+    await Get.putAsync(() => SecureStorageService().init(), permanent: true);
+    await SupabaseSetup.start(AppBuildConfig.backend, SecureSessionStorage(SecureStorageService.to.storage));
     // Remote trial switch (Gist). Fetches in the background; the dialog waits for the splash to finish.
     Get.put<AppAccessService>(AppAccessService(), permanent: true);
     // Currency + hourly rates (prefs)

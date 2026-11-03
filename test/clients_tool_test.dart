@@ -61,6 +61,10 @@ void main() {
 
     final launch = jsonDecode(read('.vscode/launch.json').replaceAll(RegExp(r'^\s*//.*$', multiLine: true), ''));
     expect((launch['configurations'] as List).map((c) => c['name']), containsAll(['royal_arena', 'royal_arena (release)']));
+    expect(
+      (launch['configurations'] as List).where((c) => c['name'].startsWith('royal_arena')).map((c) => c['args']),
+      everyElement(['--flavor', 'royal_arena', '--dart-define-from-file=config/dev.json']),
+    );
 
     expect(() => addClient(root, 'royal_arena'), throwsA(isA<ClientToolException>()));
   });

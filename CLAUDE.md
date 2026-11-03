@@ -14,6 +14,12 @@ SharedPreferences (settings). Built by DevCat Studios on the in-house GetX start
 `docs/EXPANSION_PLAN.md` holds the agreed decisions, the core + business profile + client pattern, and the phases.
 Read it before any structural change. The core uses neutral names: `ResourceType` (was `Sport`) and `Resource` (was `Court`).
 
+**It is moving to a Supabase backend** (multi-tenant, online writes, offline read cache, staff roles). The agreed design is
+`docs/ARENABOOK_SUPABASE_BACKEND_SPEC.md`; it wins over `docs/PROJECT_SPEC.md` for backend, data, auth, permissions and
+licensing. Work goes milestone by milestone (spec §21). **Done: M1** (database in `supabase/`), **M2** (app plumbing; the
+launch against a dev project is still to check). Until M5 the app still runs
+on Hive and the rules below describe today's app; don't rewire it ahead of its milestone.
+
 ## Working rules (from the owner: follow these exactly)
 
 1. **Never commit.** Don't `git commit`, amend, push, or rewrite history unless the user asks in that message.
@@ -46,12 +52,32 @@ flutter test --flavor demo_space test/arena_app_test.dart --plain-name "all tabs
 dart format -l 160 <files you changed>
 flutter run --flavor demo       # plain `flutter run` = demo (pubspec default-flavor)
 flutter build apk --debug --flavor demo     # verifies native plugins compile
-scripts\build.bat demo apk      # release build to dist/ (build.sh on macOS; adds ipa)
+scripts\build.bat demo dev apk  # release build to dist/ against config/dev.json (build.sh on macOS; adds ipa)
 dart run tool/clients.dart add <id>   # new client (also: assets <id>, ios-icon <id>)
+
+# Supabase (needs the Supabase CLI + Docker Desktop)
+supabase start                  # local stack
+supabase db reset               # re-apply all migrations + seed.sql (dev demo clients)
+supabase test db                # pgTAP tests in supabase/tests
 ```
 
 Windows dev machine, so iOS is never built locally. If the build fails with a `FormatException` in `dart_build`,
 `.dart_tool/hooks_runner` is corrupt: delete it and rebuild.
+
+## Supabase backend (`supabase/`)
+
+- `migrations/`: numbered `2026110300xxxx_<name>.sql` files in the order of spec §4.2. Never edit a migration once it has been
+  pushed to a remote project; add a new one. `20261103001500_seed_lookups.sql` holds lookup rows with fixed ids (every
+  environment); `seed.sql` is dev/local only (the four demo clients from `lib/app/config/clients/`), never prod.
+- Golden rules (spec §0.2): snake_case, `<singular>_id` integer identity PKs, `data_status`/`created_at`/`updated_at`, no hard
+  deletes, the phone writes only through `security definer` RPCs, errors are `ABxxx` codes with user-safe text (spec Appendix A).
+- **Every new `public` function must be locked down in its own migration:** `revoke execute ... from public, anon, authenticated`,
+  then grant it explicitly. Postgres gives PUBLIC execute on new functions, and the default-privilege revokes can't remove that
+  (verified). List RPCs in `20261103001700_grants.sql`'s style and add the name to `01_grants.test.sql`.
+- Tests: one pgTAP file per area in `tests/`, each `begin; \ir _setup.psql ... rollback;`. `_setup.psql` builds the fixture world
+  (clients `test_a`/`test_b`, owner/staff, signed-in phones) and `tests.login/book/edit/...` helpers.
+  Add a test for every rule you add or change.
+- The service-role key never goes in the app, `config/*.json` or git.
 
 ## Architecture
 
@@ -86,7 +112,15 @@ lib/
 - **Shell:** `/arena` is a single route with an `IndexedStack` of tabs (`ArenaTab`); tabs keep their state.
   `ShellBinding` creates all tab controllers. Navigation between tabs uses `ShellController.to.go(...)`.
   Booking actions (new, edit, repeat, invoice, mark paid, cancel) go through `BookingActions` in `shell/booking_actions.dart`.
-- **Startup order matters** (`InitBindings`): StorageService → stores → AppAccessService → SettingsStore → Hive → BookingService.
+- **Startup order matters** (`InitBindings`): StorageService → stores → SecureStorageService → Supabase → AppAccessService →
+  SettingsStore → Hive → BookingService.
+- **Build config** (`AppBuildConfig`): the flavor is the client code; the backend comes from `--dart-define-from-file=config/<env>.json`
+  (`config/example.json` is the template; `dev.json`/`prod.json` are gitignored). `BackendConfig.resolve` rejects half-filled,
+  placeholder, non-https or secret-key values. No values = no backend (plain `flutter run`, tests), so `SupabaseSetup.start` skips;
+  check `SupabaseSetup.isStarted` before touching `Supabase.instance`.
+- **Secrets** (login session `sb_session`, Hive cache key) live in `SecureStorageService` (Keychain "this device only" / Keystore),
+  never in SharedPreferences. New local cache boxes open with `SecureStorageService.to.cacheCipher` and must be cleared when
+  `cacheKeyIsNew`. Android auto-backup is off (`allowBackup="false"`): restored secure storage can't be decrypted.
   Any `CacheField` needs StorageService ready first.
 
 **Clients (flavors):** one codebase ships a separate app per arena client. **The flavor name is the client id.**
