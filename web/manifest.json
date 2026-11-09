@@ -1,6 +1,6 @@
 {
-    "name": "arenabook",
-    "short_name": "arenabook",
+    "name": "slotbook",
+    "short_name": "slotbook",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
